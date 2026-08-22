@@ -200,9 +200,17 @@ button,input{font:inherit;color:inherit}
 #gate[data-open]{opacity:0;visibility:hidden;pointer-events:none}
 .gate__art{
   position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
-  opacity:.2;
+  opacity:.38;
+  /* A halo, not a backdrop. The mask clears the middle so the wordmark and
+     the line sit on open ground, keeps the band of rings around them, then
+     fades before the edges — the figure rings the text the way a rangoli
+     rings a doorway, instead of being a watermark printed under it. */
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,
+    transparent 22%, #000 42%, #000 57%, transparent 77%);
+  mask-image:radial-gradient(circle at 50% 50%,
+    transparent 22%, #000 42%, #000 57%, transparent 77%);
 }
-.gate__art svg{width:min(120vh,120vw);height:auto;animation:turn 90s linear infinite}
+.gate__art svg{width:min(128vh,128vw);height:auto;animation:turn 90s linear infinite}
 .gate__plate{position:relative;z-index:2;text-align:center;padding:var(--shell);max-width:38rem}
 .gate__mark{line-height:.92;margin-bottom:1.9rem}
 /* Devanagari is the wordmark. Tiro has one weight, 400, and at this
@@ -218,6 +226,25 @@ button,input{font:inherit;color:inherit}
   font-size:clamp(.82rem,2.2vw,1.05rem);
   letter-spacing:.42em;text-transform:uppercase;color:var(--pig-a-ink);
   padding-left:.42em;
+}
+/* the door says what the place is before you open it. Set in the voice
+   face and italic, because this is the archive talking, not the UI. */
+.gate__blurb{
+  font-family:var(--voice);font-style:italic;
+  font-size:clamp(1.02rem,2.5vw,1.4rem);line-height:1.4;
+  color:var(--ink-2);max-width:30ch;
+  margin:0 auto 2.2rem;text-wrap:balance;
+}
+.gate__fine{
+  margin-top:1.5rem;
+  font-family:var(--sign);font-weight:500;font-size:.85rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+}
+/* the third clause is the first thing to go: on a phone the line wraps
+   mid-phrase otherwise, and the rangoli speaks for itself once inside */
+@media (max-width:560px){
+  .gate__fine-x{display:none}
+  .gate__fine{font-size:.8rem;letter-spacing:.08em}
 }
 
 /* ── 5  the stage ───────────────────────────────────────────────── */

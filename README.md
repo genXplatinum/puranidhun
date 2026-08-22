@@ -89,6 +89,22 @@ small label, tracked out past `.2em` in uppercase, is the single most
 recognisable tell in generated CSS, and the old stylesheet had ten
 near-miss variants of it at ten hand-picked sizes and trackings.
 
+## The door
+
+A browser will not start audio without a gesture, so the first screen has
+to exist anyway. It may as well say what the place is.
+
+The rangoli behind it is drawn in **ink, not powder** — knocked back to
+0.38 opacity, raw haldi at 1.45:1 is simply not there. And the mask over
+it is a halo rather than a backdrop: it clears the middle so the wordmark
+and the line sit on open ground, keeps the band of rings around them, then
+fades before the edges. The figure rings the text the way a rangoli rings a
+doorway, instead of being a watermark printed underneath it.
+
+The line under the wordmark is set in the voice face, italic, because it is
+the archive talking rather than the interface. The last clause of the fine
+print is hidden below 560px — on a phone it wraps mid-phrase otherwise.
+
 ## The controls
 
 Everything you can touch is one of two things.
@@ -229,6 +245,15 @@ it.
   Note that canvas resolves a webfont only when that exact weight has
   already been loaded, so `document.fonts.load()` every weight the image
   draws with or it will silently fall back to a system serif.
+
+  **Bump the version when you regenerate it.** The meta points at
+  `og.png?v=2`, not `og.png`. Facebook, WhatsApp, Slack and Twitter cache
+  a preview image against its URL and hold it for a long time — often
+  until someone manually re-scrapes the page. Same filename, same old
+  card, however many times you redeploy. Changing the query string makes
+  it a new URL to every scraper, which is the only reliable way to push a
+  new card out. To force the existing one immediately, run the page
+  through Facebook's Sharing Debugger and Twitter's Card Validator.
 
 ## DNS
 

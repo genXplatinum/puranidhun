@@ -451,7 +451,10 @@
 
     // a rangoli behind the door, so the idea lands before you press anything
     const gateSvg = $('#gate-rangoli');
-    if (gateSvg) gateSvg.innerHTML = RG.build('purani-dhun', roomById(S.room).pigments).svg
+    // the door's rangoli is drawn in ink, not powder. It sits behind the
+    // wordmark at low opacity, and raw haldi at 1.45:1 knocked back that
+    // far is simply not there.
+    if (gateSvg) gateSvg.innerHTML = RG.build('purani-dhun', roomById(S.room).inks).svg
       .replace(/class="rg-ring[^"]*"/g, 'class="rg-static"');
 
     wire();

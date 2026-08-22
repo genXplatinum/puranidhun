@@ -51,13 +51,24 @@
 
   /* ═══ the room ══════════════════════════════════════════════════ */
 
-  // the faintest wash of the room's pigment over the board
+  // the faintest wash of the room's pigment over the board.
+  // Returns hex rather than rgb(): this value is also written into the
+  // theme-color meta, and the space-separated rgb() form is not parsed
+  // there by every mobile browser that supports theme-color at all.
   const BASE = [228, 226, 220];
   function wash(hex, amount) {
     const n = parseInt(hex.slice(1), 16);
     const p = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-    return 'rgb(' + p.map((v, i) => Math.round(BASE[i] + (v - BASE[i]) * amount)).join(' ') + ')';
+    return '#' + p
+      .map((v, i) => Math.round(BASE[i] + (v - BASE[i]) * amount).toString(16).padStart(2, '0'))
+      .join('');
   }
+
+  // the phone's own furniture: Chrome's address bar on Android, Safari's
+  // status and tab bars on iOS. It takes the room wash too, so the colour
+  // runs to the top and bottom edges of the screen rather than stopping
+  // at the page.
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
 
   function paintRoom(id) {
     const room = roomById(id);
@@ -77,6 +88,7 @@
     // set on the element too: a transition does not refire when only the
     // custom property behind the value changes, so it would stay put
     document.body.style.backgroundColor = ground;
+    if (themeMeta) themeMeta.setAttribute('content', ground);
     $('#now-room').textContent = room.name;
     $('#now-room-deva').textContent = room.deva;
     $$('.room-btn').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));

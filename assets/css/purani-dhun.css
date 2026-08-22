@@ -76,7 +76,11 @@
 
 /* ── 2  reset + type ────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+/* the design is committed to light. Saying so stops the browser
+   force-darkening the range inputs, the search field and the scrollbar
+   on a phone set to dark mode, which would leave them fighting a board
+   that stays pale whatever the OS thinks. */
+html{-webkit-text-size-adjust:100%;color-scheme:light}
 /* the whole thing is one screen: player, then the credit bar */
 body{
   margin:0;

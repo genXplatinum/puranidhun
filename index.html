@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Purani Dhun</title>
 <meta name="description" content="369 old Hindi and Punjabi records in nine rooms. Every song draws its own rangoli.">
-<meta name="theme-color" content="#f6f5f1">
+<meta name="theme-color" content="#e4e2dc">
 <link rel="canonical" href="https://puranidhun.in/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://puranidhun.in/">
@@ -15,7 +15,7 @@
 <meta property="og:image" content="https://puranidhun.in/assets/img/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Purani Dhun — a rangoli drawn in peacock green on pale paper">
+<meta property="og:image:alt" content="Purani Dhun — a rangoli in vermilion, turmeric and peacock on a swept grey ground">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Purani Dhun — पुरानी धुन">
 <meta name="twitter:description" content="369 old records in nine rooms. Every song draws its own rangoli.">
@@ -23,7 +23,9 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&family=Archivo:wght@400;500;600&family=DM+Mono:wght@400;500&family=Anek+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<!-- two families, both of which set Devanagari and Latin from one hand:
+     Tiro Devanagari Hindi is the voice, Khand is the machine -->
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Khand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/purani-dhun.css">
 </head>
 <body>
@@ -65,8 +67,10 @@
 
   <section id="now" aria-live="polite">
     <p class="now__room"><span id="now-room"></span><b id="now-room-deva"></b></p>
-    <h2 class="now__title" id="now-title">Press play</h2>
-    <p class="now__deva" id="now-deva"></p>
+    <!-- the Devanagari is the title; the Latin under it is the
+         transliteration, the order a cassette inlay printed them in -->
+    <h2 class="now__deva" id="now-deva"></h2>
+    <p class="now__title" id="now-title">Press play</p>
     <p class="now__meta"><span id="now-artist"></span><i id="now-film"></i><em id="now-year"></em></p>
   </section>
 
@@ -91,13 +95,13 @@
     </div>
 
     <div class="tr__aux">
-      <button id="k-shuffle" class="btn btn--ghost" type="button" aria-pressed="false">Shuffle</button>
+      <button id="k-shuffle" class="btn" type="button" aria-pressed="false">Shuffle</button>
       <label class="vol">
         <span class="vol__l">Vol</span>
         <input id="vol" type="range" min="0" max="100" value="80" step="1" aria-label="Volume">
       </label>
-      <a id="now-src" class="btn btn--ghost" href="#" target="_blank" rel="noopener">Source ↗</a>
-      <button id="index-toggle" class="btn btn--ghost" type="button" aria-expanded="false" aria-controls="index">
+      <a id="now-src" class="btn" href="#" target="_blank" rel="noopener">Source</a>
+      <button id="index-toggle" class="btn" type="button" aria-expanded="false" aria-controls="index">
         <span id="index-n">163</span> tapes
       </button>
     </div>
@@ -108,7 +112,7 @@
 <aside id="index" aria-label="Track list" hidden>
   <div class="ix__bar">
     <input id="q" type="search" placeholder="Search a song, a singer, a film…" aria-label="Search tracks" autocomplete="off">
-    <button id="index-close" class="btn btn--ghost" type="button">Close</button>
+    <button id="index-close" class="btn" type="button">Close</button>
   </div>
   <div class="ix__filters" id="filters" role="group" aria-label="Filters"></div>
   <p class="ix__count" id="ix-count"></p>

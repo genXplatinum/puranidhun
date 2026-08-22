@@ -51,8 +51,8 @@
 
   /* ═══ the room ══════════════════════════════════════════════════ */
 
-  // the faintest wash of the room's pigment over the paper
-  const BASE = [246, 245, 241];
+  // the faintest wash of the room's pigment over the board
+  const BASE = [228, 226, 220];
   function wash(hex, amount) {
     const n = parseInt(hex.slice(1), 16);
     const p = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
@@ -63,10 +63,15 @@
     const room = roomById(id);
     document.documentElement.dataset.room = id;
     const [a, b, c] = room.pigments;
+    const [ai, bi, ci] = room.inks;
     const st = document.documentElement.style;
     st.setProperty('--pig-a', a);
     st.setProperty('--pig-b', b);
     st.setProperty('--pig-c', c);
+    // the readable cut of each pigment — see PIGMENT_INK in rooms.js
+    st.setProperty('--pig-a-ink', ai);
+    st.setProperty('--pig-b-ink', bi);
+    st.setProperty('--pig-c-ink', ci);
     const ground = wash(a, 0.045);
     st.setProperty('--ground', ground);
     // set on the element too: a transition does not refire when only the
@@ -185,8 +190,12 @@
   }
 
   function paintNowPlaying(t) {
-    $('#now-title').textContent  = t.t;
-    $('#now-deva').textContent   = t.d || '';
+    // The Devanagari is the title and the Latin beneath it is the
+    // transliteration — but 116 of the 369 records carry no Devanagari
+    // in the catalogue. Those lead with the Latin in the voice face and
+    // drop the second line, rather than showing an empty heading.
+    $('#now-deva').textContent   = t.d || t.t;
+    $('#now-title').textContent  = t.d ? t.t : '';
     $('#now-artist').textContent = t.a || '';
     $('#now-film').textContent   = t.al || '';
     $('#now-year').textContent   = t.y || '';
@@ -292,7 +301,8 @@
       <li><button class="row" type="button" data-v="${t.v}" aria-current="false">
         <span class="row__dot" style="--dot:${dotFor(t)}"></span>
         <span class="row__i">${String(n + 1).padStart(2, '0')}</span>
-        <span class="row__t">${esc(t.t)}${t.d ? `<span class="row__d">${esc(t.d)}</span>` : ''}</span>
+        <span class="row__d">${esc(t.d || t.t)}</span>
+        ${t.d ? `<span class="row__t">${esc(t.t)}</span>` : ''}
         <span class="row__s">${t.s ? mmss(t.s) : '—'}</span>
         <span class="row__a">${esc(t.a)}${t.al ? ' · ' + esc(t.al) : ''}${t.y ? ' · ' + t.y : ''}</span>
       </button></li>`).join('');

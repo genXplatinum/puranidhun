@@ -24,13 +24,42 @@
     neem:    '#5c9128',
   };
 
+  /*  The same nine pigments, darkened until each clears 4.5:1 against
+   *  the board (#e4e2dc). Raw powder is for the rangoli's own figure,
+   *  where the shapes are large and saturation is the point. Anything
+   *  you have to READ — the progress ring, a numeral, a live label —
+   *  takes the ink instead.
+   *
+   *  This is not a nicety. Raw haldi on the board is 1.47:1, kesari
+   *  2.37 and dhoop 2.49, and two of the nine rooms (Auto Galli and
+   *  Rickshaw Galli) lead with one of those. Their progress ring used
+   *  to be all but invisible.
+   */
+  /*  Ratios below are the WORST case across all ten grounds the page can
+   *  paint — the bare board plus the nine room washes — because the wash
+   *  darkens the board slightly and eats a little contrast with it.
+   */
+  const PIGMENT_INK = {
+    haldi:   '#7b5a0f',  /* 4.59:1 */
+    sindoor: '#b13131',  /* 4.53:1 */
+    kesari:  '#9e4711',  /* 4.51:1 */
+    gulal:   '#a93168',  /* 4.55:1 */
+    jamun:   '#7038a8',  /* 5.38:1 — already clears it, left alone */
+    indigo:  '#2e44ad',  /* 5.96:1 — already clears it, left alone */
+    dhoop:   '#096883',  /* 4.58:1 */
+    peacock: '#006d63',  /* 4.52:1 */
+    neem:    '#436a1d',  /* 4.58:1 */
+  };
+
   const room = (id, dial, name, deva, line, pigs) => ({
     id, dial, name, deva, line,
     pigments: pigs.map(p => PIGMENT[p]),
+    inks: pigs.map(p => PIGMENT_INK[p]),
     pigmentNames: pigs,
   });
 
   window.PIGMENT = PIGMENT;
+  window.PIGMENT_INK = PIGMENT_INK;
 
   window.ROOMS = [
     room('saloon-classics', 'Saloon', 'Saloon Classics', 'सैलून क्लासिक्स',

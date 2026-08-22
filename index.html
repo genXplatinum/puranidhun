@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en" data-room="saloon-classics">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Purani Dhun</title>
+<meta name="description" content="369 old Hindi and Punjabi records in nine rooms. Every song draws its own rangoli.">
+<meta name="theme-color" content="#f6f5f1">
+<link rel="canonical" href="https://puranidhun.in/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://puranidhun.in/">
+<meta property="og:site_name" content="Purani Dhun">
+<meta property="og:title" content="Purani Dhun — पुरानी धुन">
+<meta property="og:description" content="369 old records in nine rooms. Every song draws its own rangoli.">
+<meta property="og:image" content="https://puranidhun.in/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Purani Dhun — a rangoli drawn in peacock green on pale paper">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Purani Dhun — पुरानी धुन">
+<meta name="twitter:description" content="369 old records in nine rooms. Every song draws its own rangoli.">
+<meta name="twitter:image" content="https://puranidhun.in/assets/img/og.png">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&family=Archivo:wght@400;500;600&family=DM+Mono:wght@400;500&family=Anek+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/purani-dhun.css">
+</head>
+<body>
+
+<!-- audio host: rendered, because browsers throttle a display:none iframe,
+     but 1px and inert. This is a listening room; there is no picture. -->
+<div id="yt-host" aria-hidden="true"><div id="yt-player"></div></div>
+
+<a class="skip" href="#transport">Skip to the player</a>
+
+<!-- ══ entry ════════════════════════════════════════════════════════
+     A browser will not start audio without a gesture, so the door is
+     also the play button. -->
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate__art" aria-hidden="true"><svg id="gate-rangoli" viewBox="0 0 1000 1000"></svg></div>
+  <div class="gate__plate">
+    <h1 id="gate-title" class="gate__mark">
+      <span class="gate__deva">पुरानी धुन</span>
+      <span class="gate__latin">Purani&nbsp;Dhun</span>
+    </h1>
+    <button id="gate-enter" type="button" class="btn btn--big">Start the record</button>
+  </div>
+</div>
+
+<!-- ══ the player ═══════════════════════════════════════════════════ -->
+<main id="stage">
+
+  <nav id="rooms" aria-label="Rooms"><ul id="rooms-list"></ul></nav>
+
+  <!-- the rangoli: rings counter-rotate while the tape runs, and the
+       circle around the outside is how far through the song you are -->
+  <div id="record">
+    <svg id="rangoli" viewBox="0 0 1000 1000" role="img" aria-label="Rangoli for the current song">
+      <g id="rg-body"></g>
+      <circle id="rg-track" cx="500" cy="500" r="468"/>
+      <circle id="rg-progress" cx="500" cy="500" r="468"/>
+    </svg>
+  </div>
+
+  <section id="now" aria-live="polite">
+    <p class="now__room"><span id="now-room"></span><b id="now-room-deva"></b></p>
+    <h2 class="now__title" id="now-title">Press play</h2>
+    <p class="now__deva" id="now-deva"></p>
+    <p class="now__meta"><span id="now-artist"></span><i id="now-film"></i><em id="now-year"></em></p>
+  </section>
+
+  <div id="transport">
+    <div class="tr__keys">
+      <button id="k-prev" class="btn btn--icon" type="button" aria-label="Previous track">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14L8 12zM7 5v14"/></svg>
+      </button>
+      <button id="k-play" class="btn btn--play" type="button" aria-label="Play" aria-pressed="false">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l12 7-12 7z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM14 5h3v14h-3z"/></svg>
+      </button>
+      <button id="k-next" class="btn btn--icon" type="button" aria-label="Next track">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14l10-7zM17 5v14"/></svg>
+      </button>
+    </div>
+
+    <div class="tr__seek">
+      <span class="tr__t" id="now-elapsed">0:00</span>
+      <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
+      <span class="tr__t" id="now-total">0:00</span>
+    </div>
+
+    <div class="tr__aux">
+      <button id="k-shuffle" class="btn btn--ghost" type="button" aria-pressed="false">Shuffle</button>
+      <label class="vol">
+        <span class="vol__l">Vol</span>
+        <input id="vol" type="range" min="0" max="100" value="80" step="1" aria-label="Volume">
+      </label>
+      <a id="now-src" class="btn btn--ghost" href="#" target="_blank" rel="noopener">Source ↗</a>
+      <button id="index-toggle" class="btn btn--ghost" type="button" aria-expanded="false" aria-controls="index">
+        <span id="index-n">163</span> tapes
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- ══ the index ════════════════════════════════════════════════════ -->
+<aside id="index" aria-label="Track list" hidden>
+  <div class="ix__bar">
+    <input id="q" type="search" placeholder="Search a song, a singer, a film…" aria-label="Search tracks" autocomplete="off">
+    <button id="index-close" class="btn btn--ghost" type="button">Close</button>
+  </div>
+  <div class="ix__filters" id="filters" role="group" aria-label="Filters"></div>
+  <p class="ix__count" id="ix-count"></p>
+  <ol class="ix__list" id="ix-list"></ol>
+  <p class="ix__empty" id="ix-empty" hidden>Nothing matches that. Clear a filter and try again.</p>
+</aside>
+
+<!-- ══ footer ═══════════════════════════════════════════════════════ -->
+<footer id="colophon">
+  <a href="https://lovelace.co.in" target="_blank" rel="noopener">
+    Made with <span class="heart" aria-label="love">♥</span> by <strong>Love Lace Designing Studio</strong>
+  </a>
+</footer>
+
+<script src="assets/js/catalog.js"></script>
+<script src="assets/js/rooms.js"></script>
+<script src="assets/js/rangoli.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

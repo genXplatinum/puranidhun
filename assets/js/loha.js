@@ -35,18 +35,25 @@
       is the other axis — a genre mark carried on the record itself — so
       it crosses both and reaches back past where either one starts. */
   const ALL = (window.GYM && window.GYM.tracks) || [];
+  /*  Each record says what it is — g under a bar, b badmashi, d floor —
+      and the decks cut on those marks, not on vibes. The year decks
+      require `g`, which is what stops a wedding banger from turning up in
+      The Era just because it was released in 2016. */
   const DECKS = {
-    now: ALL.filter(t => t.y && t.y >= 2019),
-    era: ALL.filter(t => t.y && t.y >= 2005 && t.y <= 2018),
+    now:      ALL.filter(t => t.g && t.y >= 2019),
+    era:      ALL.filter(t => t.g && t.y >= 2005 && t.y <= 2018),
     badmashi: ALL.filter(t => t.b && t.y >= 2000 && t.y <= 2016),
+    dance:    ALL.filter(t => t.d && t.y >= 2000),
   };
-  const DECK_IDS = ['now', 'era', 'badmashi'];
+  const DECK_IDS = ['now', 'era', 'badmashi', 'dance'];
   const CUE = {
     now: 'Heavy rotation',
     era: 'On repeat, 2005–18',
     badmashi: 'Badmashi · ਬਦਮਾਸ਼ੀ',
+    dance: 'Bhangra · ਭੰਗੜਾ',
   };
-  const DECK_NAME = { now: 'Now', era: '2005–18', badmashi: 'Badmashi 2000–16' };
+  const DECK_NAME = { now: 'Now', era: '2005–18',
+                      badmashi: 'Badmashi 2000–16', dance: 'Dance 2000–26' };
 
   /*  What the corridor is made of on each deck. Now is a working shed:
       cold strip lights, hazard yellow. The Era is lit on tungsten, which
@@ -57,6 +64,13 @@
     now:      { accent: [1.00, 0.80, 0.02], lamp: [0.85, 0.90, 1.00], mood: 0.00 },
     era:      { accent: [1.00, 0.60, 0.14], lamp: [1.00, 0.80, 0.52], mood: 0.38 },
     badmashi: { accent: [1.00, 0.21, 0.15], lamp: [1.00, 0.28, 0.20], mood: 1.00 },
+    /*  Dance is the one room that is not iron. Same corridor, but somebody
+        has patched a lighting desk into it: party drives the hue wheel in
+        the shader, so every lamp bar takes its own colour and the chevrons
+        run as chase lights. The accent is rani pink — the colour of every
+        Punjabi wedding tent there has ever been. */
+    dance:    { accent: [1.00, 0.24, 0.60], lamp: [1.00, 0.55, 0.85], mood: 0.15,
+                party: 1.00 },
   };
   const DEFAULT_BPM = 96;
 
@@ -216,7 +230,8 @@
       const look = LOOK[S.deck] || LOOK.now;
       gpu.draw({ time: now / 1000, dist: S.dist, beat: S.beat, bar: S.bar,
                  force: F, roll: S.roll,
-                 accent: look.accent, lamp: look.lamp, mood: look.mood });
+                 accent: look.accent, lamp: look.lamp,
+                 mood: look.mood, party: look.party || 0 });
     }
 
     /*  The room takes the hit, and the type takes a smaller one. The
@@ -495,6 +510,7 @@
         case '1': setDeck('now'); break;
         case '2': setDeck('era'); break;
         case '3': setDeck('badmashi'); break;
+        case '4': setDeck('dance'); break;
       }
     });
 

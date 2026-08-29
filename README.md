@@ -52,7 +52,7 @@ assets/img/og.png             link previews only; never fetched by the page
 
 gym.html                      Loha — the gym page, its own thing entirely
 assets/css/loha.css           dark, and shares no tokens with the board
-assets/js/gym-catalog.js      387 Punjabi tracks, one flat list
+assets/js/gym-catalog.js      499 Punjabi tracks, one flat list
 assets/js/corridor.js         one WebGL shader: the tunnel
 assets/js/loha.js             queue, YouTube, tempo clock, shake
 ```
@@ -304,23 +304,33 @@ years younger than everything in the main catalogue, they are in a
 different language, and they wanted a room the pale board could not give
 them without ruining itself.
 
-## Three decks
+## Four decks
 
-One page, three playlists, switched by the row of plates under the wordmark.
-The catalogue is **one flat list of 387 records**; the decks are cuts of it,
-derived at load, so nothing is stored twice and nothing can fall between
-two of them.
+One page, four playlists, switched by the row of plates under the wordmark.
+The catalogue is **one flat list of 499 records**; the decks are cuts of it,
+derived at load, so nothing is stored twice.
+
+Each record says what it *is* — three marks, and the decks cut on those
+rather than on vibes:
+
+| Mark | Means |
+| --- | --- |
+| `g` | it belongs under a bar |
+| `b` | badmashi: gangster, outlaw, rivalry, jail, swagger |
+| `d` | it empties a room onto the floor |
 
 | Deck | Cut | Tracks |
 | --- | --- | --- |
-| `Now` | `y >= 2019` | 112 |
-| `The Era` | `2005 <= y <= 2018` | 273 |
-| `Badmashi` | `b === 1` and `2000 <= y <= 2016` | 239 |
+| `Now` | `g` and `y >= 2019` | 112 |
+| `The Era` | `g` and `2005 <= y <= 2018` | 273 |
+| `Badmashi` | `b` and `2000 <= y <= 2016` | 239 |
+| `Dance` | `d` and `y >= 2000` | 191 |
 
-`Now` and `The Era` split on year and never overlap. **`Badmashi` is a
-different axis** — a genre mark carried on the record itself — so it
-crosses both and reaches back past where either one starts. A song can be
-in `The Era` and `Badmashi` at once, and about a hundred are.
+The year decks require `g`, and that is the load-bearing part. Without it,
+adding a Dance deck would have dragged every wedding banger into `The Era`
+on the strength of its release date alone — *Hath Chumme* fills a floor and
+belongs nowhere near a set of deadlifts. A record can carry all three marks,
+and several do.
 
 `The Era` is what was on repeat in gyms between 2005 and 2018. It is
 heaviest in 2011–2014 — the Honey Singh, Imran Khan, Bohemia and Panjabi MC
@@ -337,18 +347,25 @@ Nobody keeps a record of what a gym played, and no filter decides what
 counts as badmashi. Both of those decks are hand-picked judgements. Treat
 them as an argument rather than an archive, and send corrections.
 
+`Dance` is the feel-good cut, 2000 to now: bhangra, the dhol end of the
+catalogue, the Honey Singh floor years, the wedding-tent standards and the
+modern radio bhangra. *Daru Badnaam*, *Angreji Beat*, *Wakhra Swag*, *Chak
+De Phattey*, *Lamberghini*, *Tauba Tauba*, *Naach Meri Rani*, *Brown Munde*.
+
 ## What is not in here
 
-This is a gym playlist. The test for a record is whether it raises your
-heart rate under a bar — **not whether it is a good song**. Romance,
-heartbreak, wedding pop and club filler are out, however big they were.
-*Bewafa*, *Love Dose*, *High Heels*, *Patola*, *Lahore*, *Hath Chumme*,
-*Cute Munda*, *Raat Di Gedi*, *Thokda Reha* — all pulled, along with 68
-others, for exactly that reason.
+One test, two ways to pass it: a record either makes you **lift** or it
+makes you **move**. Whether it is a good song is not the question.
 
-That cut is a judgement and it is written down as one: `purge` in the build
-scripts, and the rule at the top of `gym-catalog.js`. If you add to the
-file, that is the bar to clear.
+Romance, heartbreak and the slow set are out, however big they were —
+*Bewafa*, *Cute Munda*, *Thokda Reha*, *Sohne Lagde* and about fifty others
+were pulled for exactly that. But a floor-filler is not filler: 36 records
+cut earlier as "club" are back carrying `d` alone, because emptying a room
+onto the floor is the whole job of the Dance deck.
+
+That cut is a judgement and it is written down as one: `purge` and
+`dance_tags` in the build scripts, and the rule at the top of
+`gym-catalog.js`. If you add to the file, that is the bar to clear.
 
 ## Where the tracks came from
 
@@ -444,6 +461,14 @@ underline and lit key follows the room:
 | `Now` | cold white | hazard yellow | a working shed |
 | `The Era` | tungsten | amber | how a room lit in 2011 actually looked |
 | `Badmashi` | red | red | the same corridor with the white lights cut |
+| `Dance` | a hue wheel | rani pink | somebody patched a lighting desk in |
+
+`Dance` runs a second scalar, `party`. It puts every ceiling bar on its own
+colour off a turning wheel, converts the hazard chevrons from paint into a
+chase that runs forward with the beat, and adds a mirror ball. That last one
+needed a fine sample grid — at 34 cells across a screen the "flecks" come
+out as fist-sized magenta squares and read as broken graphics rather than
+light; 240 gives glitter.
 
 `mood` also warms the steel toward rust, deepens the haze, tightens the
 vignette and hardens the downbeat wash. The rib highlights take it too —
@@ -487,7 +512,7 @@ throwing the room at you.
 | `↑` `↓` | volume |
 | `S` | shuffle |
 | `T` | tap the tempo |
-| `1` `2` `3` | Now / The Era / Badmashi |
+| `1` `2` `3` `4` | Now / The Era / Badmashi / Dance |
 | `/` | open the rack and search |
 | `Esc` | close the rack |
 

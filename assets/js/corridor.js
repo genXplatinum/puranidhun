@@ -15,10 +15,13 @@
  *    accent  the hazard paint on the walls
  *    lamp    what the strip lights are burning
  *    mood    0 clean steel .. 1 rust and blood
+ *    party   0 work light .. 1 the lamps become a rig
  *
- *  The last three are what makes the corridor a different place on each
+ *  The last four are what makes the corridor a different place on each
  *  deck: cold white and hazard yellow for Now, tungsten and amber for
- *  the Era, red on rusted steel for Badmashi.
+ *  the Era, red on rusted steel for Badmashi — and for Dance the same
+ *  corridor with a lighting desk patched in, every bar on its own hue
+ *  and the chevrons running as chase lights.
  *  ------------------------------------------------------------------ */
 
 window.CORRIDOR = (function () {
@@ -31,8 +34,11 @@ window.CORRIDOR = (function () {
   const FRAG = `
   precision highp float;
   uniform vec2  uRes;
-  uniform float uTime, uDist, uBeat, uBar, uForce, uRoll, uMood;
+  uniform float uTime, uDist, uBeat, uBar, uForce, uRoll, uMood, uParty;
   uniform vec3  uAccent, uLamp;
+
+  /* a cheap full-saturation hue wheel, for the lighting rig */
+  vec3 hue(float h){ return 0.5 + 0.5 * cos(6.28318 * (h + vec3(0.0, 0.33, 0.67))); }
 
   mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
   float hash21(vec2 p){
@@ -88,8 +94,12 @@ window.CORRIDOR = (function () {
 
     /* ── hazard chevrons, low on both side walls ────────────────── */
     float band = sideWall * smoothstep(0.085, 0.02, abs(across + 0.66));
-    float chev = step(0.5, fract(z * 0.9 + 0.5));
-    vec3  haz  = mix(uAccent, vec3(0.05, 0.045, 0.02), chev);
+    /*  On the dance deck the chevrons stop being paint and start being a
+        chase: the stripe that is lit runs forward with the beat. */
+    float chase = step(0.5, fract(z * 0.9 + 0.5 - uParty * (uTime * 1.6 + uBeat)));
+    float chev  = mix(step(0.5, fract(z * 0.9 + 0.5)), chase, uParty);
+    vec3  hazC  = mix(uAccent, hue(z * 0.06 + uTime * 0.09), uParty);
+    vec3  haz   = mix(hazC, vec3(0.05, 0.045, 0.02), chev);
     col = mix(col, haz * (0.55 + 0.9 * uBeat * uForce), band);
 
     /* ── strip lights along the roof, every three units ──────────── */
@@ -102,8 +112,13 @@ window.CORRIDOR = (function () {
     float lf   = abs(fract(z / 3.0) - 0.5);
     float lamp = roof * smoothstep(0.075, 0.0, lf)
                       * smoothstep(0.60, 0.14, abs(across)) * ahead;
+    /*  Every bar takes its own colour off the wheel, and the wheel turns.
+        floor(z/3.0) is which bar you are looking at, so the corridor reads
+        as a row of separate lamps rather than one wash. */
+    vec3 rig   = hue(floor(z / 3.0) * 0.19 + uTime * 0.11);
     vec3 lampC = mix(uLamp, vec3(1.00, 0.17, 0.10), uBar * uForce);
-    col += lampC * lamp * (1.7 + 2.8 * uBeat * uForce);
+    lampC = mix(lampC, rig, uParty);
+    col += lampC * lamp * (1.7 + 2.8 * uBeat * uForce) * (1.0 + 0.7 * uParty);
 
     /* their spill down the walls, and the wet bounce off the floor */
     float spill = smoothstep(0.55, 0.0, lf) * (0.14 + 0.30 * uBeat * uForce) * ahead;
@@ -123,9 +138,17 @@ window.CORRIDOR = (function () {
     col += mix(vec3(0.020, 0.024, 0.034), vec3(0.040, 0.014, 0.012), uMood)
                  * (1.0 - fog);                          /* haze */
 
-    /* dust caught in the lamps */
+    /* dust caught in the lamps — and on the dance deck, a mirror ball */
     float m = hash21(floor(vec2(uv.x * 190.0, uv.y * 190.0 - uTime * 24.0)));
     col += vec3(0.9, 0.88, 0.8) * step(0.9988, m) * (0.25 + 0.55 * uBeat);
+    /*  Mirror ball. The cell grid has to be fine — at 34 across a screen
+        the "flecks" come out as fist-sized magenta squares and read as
+        broken graphics rather than light. 240 and a tighter cut gives
+        roughly a hundred specks, which is glitter. */
+    float g = hash21(floor(vec2(uv.x * 240.0 + floor(uTime * 6.0),
+                                uv.y * 240.0 - floor(uTime * 5.0))));
+    col += hue(g * 3.1 + uTime * 0.2) * step(0.9976, g) * uParty
+                 * (0.55 + 1.3 * uBeat * uForce);
 
     /* ── grade ──────────────────────────────────────────────────── */
     col = pow(max(col, 0.0), vec3(0.88));
@@ -176,7 +199,8 @@ window.CORRIDOR = (function () {
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
       const U = {};
-      ['uRes','uTime','uDist','uBeat','uBar','uForce','uRoll','uMood','uAccent','uLamp']
+      ['uRes','uTime','uDist','uBeat','uBar','uForce','uRoll','uMood','uParty',
+       'uAccent','uLamp']
         .forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
 
       let w = 0, h = 0;
@@ -205,6 +229,7 @@ window.CORRIDOR = (function () {
           gl.uniform1f(U.uForce, s.force);
           gl.uniform1f(U.uRoll,  s.roll);
           gl.uniform1f(U.uMood,  s.mood);
+          gl.uniform1f(U.uParty, s.party || 0);
           gl.uniform3fv(U.uAccent, s.accent);
           gl.uniform3fv(U.uLamp,   s.lamp);
           gl.drawArrays(gl.TRIANGLES, 0, 3);

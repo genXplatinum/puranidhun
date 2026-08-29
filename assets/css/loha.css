@@ -471,6 +471,14 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   --haz-deep:#b3211a;
   --ice:#ff9d94;
 }
+/*  Rani pink: the colour of every Punjabi wedding tent there has ever
+    been. 6.0:1 on the void, 6.4:1 against the black it carries when a key
+    is down — the widest margin of the four. */
+:root[data-deck="dance"]{
+  --haz:#ff3d9a;
+  --haz-deep:#b81f68;
+  --ice:#8ce9ff;
+}
 /*  Badmashi is the one deck that is not lit from above. The vignette
     closes in and the ground goes to almost nothing, so the corridor is
     doing the talking and the type sits in what is left. */
@@ -512,9 +520,19 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
 #k-tap.is-set[aria-pressed="true"] b{color:#000}
 
 @media (max-width:420px){
-  .deck-btn{padding:.36rem .7rem .32rem}
-  .deck-btn b{font-size:.76rem;letter-spacing:.1em}
-  .deck-btn span{font-size:.58rem}
+  .deck-btn{padding:.36rem .6rem .32rem}
+  .deck-btn b{font-size:.74rem;letter-spacing:.07em}
+  .deck-btn span{font-size:.56rem;letter-spacing:.06em}
+  #decks{gap:.3rem}
+}
+/*  Four decks across a 320px screen. The year ranges are the first thing
+    to go — the names already say what each one is, and a rail you have to
+    scroll to find the fourth deck on is worse than a rail without dates. */
+@media (max-width:365px){
+  .deck-btn{padding:.34rem .42rem .3rem}
+  .deck-btn b{font-size:.68rem;letter-spacing:.03em}
+  .deck-btn span{display:none}
+  #decks{gap:.22rem}
 }
 @media (max-height:520px){
   #decks{margin-top:0}

@@ -1,0 +1,240 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PURANI DHUN — on the dark
+   ─────────────────────────────────────────────────────────────────
+   This file is the main site's half of the design. Everything it does
+   NOT say is said by loha.css, which is now the system for both pages:
+   the tokens, the corridor layers, the plate keys, the chips, the door,
+   the rack. Load loha.css first, then this.
+
+   What is different here, and only here:
+
+     · the rangoli. It is the whole reason this page exists. On the old
+       pale board it was powder on cement; on black it is lit, so the
+       pigments are the LIFTED nine (PIGMENT_GLOW in rooms.js) rather
+       than the darkened ones, and the figure carries a glow filter.
+
+     · Devanagari leads. Khand does the chrome on both pages, but the
+       song title here is Tiro Devanagari Hindi at full size, because a
+       cassette inlay printed the Hindi first and the Latin under it.
+       The gym page sets its titles in Latin — those are Punjabi records
+       marketed in Latin. Same system, opposite call, both on purpose.
+
+     · nine rooms instead of four decks, so the rail scrolls rather than
+       fitting, and the current room is walked into view.
+   ─────────────────────────────────────────────────────────────────
+   1  the rangoli
+   2  the room rail
+   3  now playing
+   4  the transport
+   5  narrow screens
+   6  reduced motion
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1  the rangoli ─────────────────────────────────────────────── */
+#record{
+  flex:1;min-height:0;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+#rangoli{
+  width:100%;max-width:min(54vh, 27rem);height:100%;
+  overflow:visible;
+  /*  Lit, not printed. The dark shadow separates the figure from the
+      corridor; the coloured one is the light it is giving off. */
+  filter:drop-shadow(0 0 16px rgba(0,0,0,.9))
+         drop-shadow(0 0 22px color-mix(in srgb, var(--haz) 32%, transparent));
+}
+/*  Some seeds draw solid motifs rather than outlines. On the old pale
+    board that was powder laid on thick; on black an opaque disc reads as
+    a sticker pasted over the corridor. Held just off full, it reads as
+    lit glass with the room still behind it. */
+#rg-body path, #rg-body circle{fill-opacity:.78}
+#rg-body{transform-origin:500px 500px}
+
+/* each ring turns on its own clock, alternate rings the other way */
+.rg-ring{
+  transform-origin:500px 500px;transform-box:view-box;
+  animation:turn var(--spin,30s) linear infinite;
+  opacity:0;
+}
+.rg-ring--rev{animation-direction:reverse}
+@keyframes turn{to{transform:rotate(360deg)}}
+.is-drawn .rg-ring{
+  opacity:1;
+  animation:turn var(--spin,30s) linear infinite, bloom .8s var(--pop) backwards;
+  animation-delay:0s, calc(var(--i) * 90ms);
+}
+.is-drawn .rg-ring--rev{animation-direction:reverse, normal}
+@keyframes bloom{
+  from{opacity:0;transform:rotate(-22deg) scale(.82)}
+  to  {opacity:1;transform:rotate(0) scale(1)}
+}
+.rg-bindu{opacity:0;transition:opacity .5s .35s}
+.is-drawn .rg-bindu{opacity:1}
+
+/*  The figure breathes on the beat rather than on a loop of its own —
+    loha.js writes --pulse every frame, so the rangoli is on the same
+    clock as the corridor and the shake. */
+#rg-body{transform:scale(calc(1 + var(--pulse, 0) * 0.022))}
+
+/* the outer circle is how far through the song you are */
+/*  On the pale board a hairline at 13% was plenty. On black it is not
+    there at all, and the progress ring needs a track to run in or the
+    filled arc reads as a stray mark. */
+#rg-track{fill:none;stroke:rgba(255,255,255,.22);stroke-width:2.5}
+[data-loading] #rg-track{
+  stroke:var(--haz);stroke-width:4;
+  stroke-dasharray:70 2871;stroke-linecap:round;
+  transform-origin:500px 500px;animation:chase 1.1s linear infinite;
+}
+@keyframes chase{to{transform:rotate(360deg)}}
+#rg-progress{
+  fill:none;stroke:var(--haz);stroke-width:5;stroke-linecap:round;
+  transform:rotate(-90deg);transform-origin:500px 500px;
+  stroke-dasharray:2941;stroke-dashoffset:2941;
+  transition:stroke-dashoffset .28s linear;
+  filter:drop-shadow(0 0 6px var(--haz));
+}
+
+/* ── 2  the room rail ───────────────────────────────────────────── */
+/*  Nine of them will not fit across a phone the way four decks do, so
+    this rail scrolls and loha.js walks the current room into view. */
+#rooms{flex:none;width:100%;min-width:0}
+#rooms-list{
+  display:flex;gap:.4rem;justify-content:center;
+  overflow-x:auto;scrollbar-width:none;
+  margin-inline:calc(var(--shell) * -1);padding-inline:var(--shell);
+  padding-bottom:.2rem;
+}
+#rooms-list::-webkit-scrollbar{display:none}
+.room-btn{
+  flex:0 0 auto;
+  border:1px solid var(--edge);background:rgba(12,14,18,.7);
+  color:var(--chalk-2);cursor:pointer;white-space:nowrap;
+  padding:.4rem .85rem .36rem;
+  display:flex;flex-direction:column;align-items:center;gap:.02rem;
+  backdrop-filter:blur(3px);
+  transition:color .14s var(--ease), border-color .14s var(--ease),
+             background .14s var(--ease), transform .07s var(--ease);
+}
+.room-btn__dial{
+  font-weight:700;font-size:.8rem;letter-spacing:.13em;
+  text-transform:uppercase;line-height:1.15;
+}
+.room-btn__deva{
+  font-family:var(--voice);font-weight:400;font-size:.72rem;
+  letter-spacing:0;color:var(--chalk-3);line-height:1.15;
+}
+.room-btn:hover{color:var(--chalk);border-color:var(--chalk-3)}
+.room-btn:active{transform:translateY(2px)}
+.room-btn[aria-current="true"]{
+  background:var(--haz);border-color:var(--haz);color:#000;
+}
+.room-btn[aria-current="true"] .room-btn__deva{color:rgba(0,0,0,.66)}
+
+/* ── 3  now playing ─────────────────────────────────────────────── */
+/*  Devanagari leads, and it is set in the voice face at full size. The
+    Latin under it is the transliteration, in signage caps — the order a
+    cassette inlay printed them in. */
+.now__deva{
+  font-family:var(--voice);font-weight:400;
+  font-size:clamp(2rem,7.6vw,5rem);line-height:1.1;
+  letter-spacing:0;text-transform:none;color:var(--chalk);
+  text-wrap:balance;max-width:20ch;
+  text-shadow:
+    calc(var(--split) * -1) 0 rgba(255,59,45,.8),
+    var(--split) 0 rgba(140,233,255,.7);
+}
+.now__title{
+  font-weight:700;font-size:clamp(.86rem,2.1vw,1.15rem);
+  letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-2);
+}
+/* a record with no Devanagari leads with its Latin title instead, in the
+   voice face, and has no second line to show */
+.now__title:empty{display:none}
+.now__room{
+  display:flex;gap:.55rem;justify-content:center;align-items:baseline;
+  font-weight:700;font-size:.72rem;letter-spacing:.34em;
+  text-transform:uppercase;color:var(--haz);padding-left:.34em;
+}
+.now__room b{
+  font-family:var(--voice);font-weight:400;letter-spacing:0;
+  font-size:.95rem;text-transform:none;color:var(--chalk-3);
+}
+
+/* ── 4  the transport ───────────────────────────────────────────── */
+/* the seek rail here is a tape counter, not a plate stack */
+.bar__fill{
+  background-image:none;
+  background:linear-gradient(90deg, var(--haz), color-mix(in srgb, var(--haz) 55%, #fff));
+}
+
+/* ── 5  narrow screens ──────────────────────────────────────────── */
+@media (max-width:760px){
+  #rooms-list{justify-content:flex-start;gap:.3rem}
+  .room-btn{padding:.34rem .6rem .3rem}
+  .room-btn__dial{font-size:.72rem;letter-spacing:.08em}
+  .room-btn__deva{font-size:.64rem}
+  .now__deva{font-size:clamp(1.6rem,8.5vw,2.8rem);max-width:16ch}
+  #rangoli{max-width:min(46vh,20rem)}
+}
+@media (max-height:560px){
+  .now__room{display:none}
+  #rangoli{max-width:min(38vh,14rem)}
+}
+
+/* ── 6  reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  .rg-ring{animation:none !important;opacity:1 !important}
+  #rg-body{transform:none !important}
+  .now__deva{text-shadow:none}
+}
+
+/* ── 7  what this page adds to the system ───────────────────────── */
+:root{
+  /*  loha.css names the voice face --gur because the gym page is set in
+      Gurmukhi. Here the voice is Devanagari, so the token is repointed
+      rather than a second one invented — every rule in the system that
+      reaches for the voice keeps working. */
+  --voice:'Tiro Devanagari Hindi','Nirmala UI',Georgia,serif;
+  --gur:'Tiro Devanagari Hindi','Nirmala UI',Georgia,serif;
+  --pop:cubic-bezier(.34,1.42,.64,1);
+}
+
+/* the rangoli behind the door: a halo, not a backdrop */
+.gate__art{
+  position:absolute;inset:0;display:grid;place-items:center;
+  pointer-events:none;opacity:.5;
+  /*  Clear enough of the middle that the wordmark sits on open ground.
+      At 20% the inner rings still ran under the Latin line. */
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,
+    transparent 30%, #000 46%, #000 60%, transparent 80%);
+  mask-image:radial-gradient(circle at 50% 50%,
+    transparent 30%, #000 46%, #000 60%, transparent 80%);
+}
+.gate__art svg{width:min(126vh,126vw);height:auto;animation:turn 90s linear infinite}
+.rg-static{opacity:1}
+
+/* the filter chips live in the rack, above the rows */
+.ix__filters{
+  display:flex;flex-wrap:wrap;gap:.35rem;
+  padding:0 var(--shell) .8rem;
+}
+.ix__filters .chip{padding:.32rem .6rem .28rem;font-size:.74rem;letter-spacing:.09em}
+
+/*  artist · film · year. The system sets .tags as a flex row, which is
+    right for two short chips and wrong here: "Lata Mangeshkar · M. G.
+    Sreekumar" wraps inside its own item and leaves the film stranded
+    across a flex gap. As a block it wraps like the prose it is. */
+.tags{display:block;max-width:48ch;margin-inline:auto;line-height:1.45}
+.tags span{display:inline}
+/*  A general sibling, not an adjacent one. Adjacent gets it wrong twice:
+    with `span + span` an empty artist leaves a leading "· " on the film,
+    and with `span:not(:empty) + span` an empty FILM swallows the
+    separator between artist and year. `~` asks only whether some
+    non-empty field came before, which is the actual question. */
+.tags span:not(:empty) ~ span:not(:empty)::before{content:' · ';opacity:.5}
+
+@media (prefers-reduced-motion:reduce){
+  .gate__art svg{animation:none}
+}

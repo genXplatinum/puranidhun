@@ -1,7 +1,22 @@
 /*  PURANI DHUN — the machine
  *  ------------------------------------------------------------------
- *  Holds the queue, talks to YouTube, and keeps the rangoli in step
- *  with whatever is coming out of the speakers.
+ *  Same engine as the gym page: a queue, a YouTube iframe, a tempo
+ *  clock, a WebGL corridor and a shake. What is different is what sits
+ *  in the middle of it — nine rooms of old Hindi records, and a rangoli
+ *  drawn from the video id of whatever is playing.
+ *
+ *  The room decides the light. Each of the nine carries a pigment triad,
+ *  and that triad is handed to three places at once: the rangoli's
+ *  figure, the corridor's hazard paint and lamps, and the page's accent
+ *  token. Walk into Dard 90s and the whole site goes jamun.
+ *
+ *  ── on the beat ───────────────────────────────────────────────────
+ *  Nothing here is listening to the audio. The player is a cross-origin
+ *  YouTube iframe: createMediaElementSource() needs same-origin media
+ *  and there is no API for the spectrum. What it keeps instead is a
+ *  tempo clock off the playback position, defaulting to 84 BPM — old
+ *  film songs sit slower than the gym page's 96 — and the Tap key sets
+ *  the real tempo and phase, per track, remembered.
  *  ------------------------------------------------------------------ */
 
 (function () {
@@ -15,142 +30,53 @@
   const CATALOG = window.CATALOG || [];
   const ROOMS   = window.ROOMS   || [];
   const RG      = window.RANGOLI;
+  const CIRC    = 2 * Math.PI * 468;      // the progress ring
 
-  const CIRC = 2 * Math.PI * 468;   // the progress ring
+  const DEFAULT_BPM = 84;
+  const FORCE_CAP = REDUCED ? 0.28 : 1;
 
   const S = {
     room: ROOMS[0].id,
     queue: [], i: 0,
-    shuffle: false, playing: false,
-    volume: 80, duration: 0, elapsed: 0,
-    seeking: false, started: false,
+    shuffle: false, playing: false, started: false,
+    volume: 80, force: 0.55,
+    duration: 0, elapsed: 0, seeking: false,
     dead: new Set(),
+    bpm: DEFAULT_BPM, phase0: 0, lastBeat: -1,
+    beat: 0, bar: 0, dist: 0, roll: 0,
+    shakeX: 0, shakeY: 0, kick: 0,
   };
 
-  /* ── ordering ─────────────────────────────────────────────────────
-     Many songs sit in six or seven rooms. Ordered by anything global
-     every room would open with the same record, so each room sorts its
-     own list by a hash of (room + video): stable, and different in
-     every room. */
+  /* ═══ store ═════════════════════════════════════════════════════ */
+  const KEY = 'dhun:v2';
+  const store = {
+    read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+    write(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} },
+    patch(o) { const d = this.read(); this.write(Object.assign(d, o)); },
+    bpmFor(v) { return (this.read().bpm || {})[v] || null; },
+    setBpm(v, n) { const d = this.read(); d.bpm = d.bpm || {}; d.bpm[v] = n; this.write(d); },
+  };
+
+  /* ═══ helpers ═══════════════════════════════════════════════════ */
+  const esc = s => String(s == null ? '' : s)
+    .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function mmss(s) {
+    if (!isFinite(s) || s < 0) s = 0;
+    return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  }
   function hash32(s) {
     let h = 2166136261;
     for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
     return h >>> 0;
   }
+  /* Many songs sit in six or seven rooms. Ordered by anything global,
+     every room would open with the same record — so each room sorts its
+     own list by a hash of (room + video): stable, different everywhere. */
   const orderFor = (id, list) => list.slice().sort((a, b) => hash32(id + a.v) - hash32(id + b.v));
   const roomById = id => ROOMS.find(r => r.id === id) || ROOMS[0];
   const inRoom   = id => orderFor(id, CATALOG.filter(t => t.r.includes(id) && !S.dead.has(t.v)));
   const track    = () => S.queue[S.i];
 
-  function mmss(s) {
-    if (!isFinite(s) || s < 0) s = 0;
-    return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-  }
-  const esc = s => String(s == null ? '' : s)
-    .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-  /* ═══ the room ══════════════════════════════════════════════════ */
-
-  // the faintest wash of the room's pigment over the board.
-  // Returns hex rather than rgb(): this value is also written into the
-  // theme-color meta, and the space-separated rgb() form is not parsed
-  // there by every mobile browser that supports theme-color at all.
-  const BASE = [228, 226, 220];
-  function wash(hex, amount) {
-    const n = parseInt(hex.slice(1), 16);
-    const p = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-    return '#' + p
-      .map((v, i) => Math.round(BASE[i] + (v - BASE[i]) * amount).toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  // the phone's own furniture: Chrome's address bar on Android, Safari's
-  // status and tab bars on iOS. It takes the room wash too, so the colour
-  // runs to the top and bottom edges of the screen rather than stopping
-  // at the page.
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-
-  function paintRoom(id) {
-    const room = roomById(id);
-    document.documentElement.dataset.room = id;
-    const [a, b, c] = room.pigments;
-    const [ai, bi, ci] = room.inks;
-    const st = document.documentElement.style;
-    st.setProperty('--pig-a', a);
-    st.setProperty('--pig-b', b);
-    st.setProperty('--pig-c', c);
-    // the readable cut of each pigment — see PIGMENT_INK in rooms.js
-    st.setProperty('--pig-a-ink', ai);
-    st.setProperty('--pig-b-ink', bi);
-    st.setProperty('--pig-c-ink', ci);
-    const ground = wash(a, 0.045);
-    st.setProperty('--ground', ground);
-    // set on the element too: a transition does not refire when only the
-    // custom property behind the value changes, so it would stay put
-    document.body.style.backgroundColor = ground;
-    if (themeMeta) themeMeta.setAttribute('content', ground);
-    $('#now-room').textContent = room.name;
-    $('#now-room-deva').textContent = room.deva;
-    $$('.room-btn[data-id]').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));
-    railTo(id);
-  }
-
-  /*  Below 820px the rail stops wrapping and becomes a horizontal
-      scroller wider than the screen, so the room you are standing in can
-      sit off either edge — Mistri Kaam, last of the nine, is off the right
-      on a phone from the first paint. Walk it back to the middle.
-      Measured off rects rather than offsetLeft: the buttons' offsetParent
-      is the nav, not the scroller, and on narrow screens the two are
-      pulled apart by the rail's negative margin. */
-  function railTo(id) {
-    const rail = $('#rooms-list');
-    const cur  = $(`.room-btn[data-id="${id}"]`);
-    if (!rail || !cur || rail.scrollWidth <= rail.clientWidth) return;
-    const r = rail.getBoundingClientRect();
-    const c = cur.getBoundingClientRect();
-    rail.scrollTo({
-      left: rail.scrollLeft + (c.left + c.width / 2) - (r.left + r.width / 2),
-      behavior: REDUCED ? 'auto' : 'smooth',
-    });
-  }
-
-  /*  Nine rooms, then the way out. Gym Playlist is not a tenth room and
-      never was: it is a different room in a different building — dark,
-      Punjabi, and loud — so it is a link to its own page rather than a
-      palette swap here. It rides the same rail because that is where you
-      would look for it. */
-  function buildRoomNav() {
-    $('#rooms-list').innerHTML = ROOMS.map(r => `
-      <li><button class="room-btn" type="button" data-id="${r.id}" aria-current="false"
-                  aria-label="${esc(r.name)}, ${inRoom(r.id).length} tapes">
-        <span>${esc(r.dial)}</span><span class="room-btn__n">${inRoom(r.id).length}</span>
-      </button></li>`).join('') + `
-      <li><a class="room-btn room-btn--out" href="gym.html"
-             aria-label="Gym Playlist — Punjabi, on its own page">
-        <span>Gym Playlist</span><span class="room-btn__out" aria-hidden="true">&#8599;</span>
-      </a></li>`;
-    $$('.room-btn[data-id]').forEach(b => b.addEventListener('click', () => setRoom(b.dataset.id)));
-  }
-
-  function setRoom(id) {
-    if (id === S.room && S.queue.length) return;
-    S.room = id;
-    paintRoom(id);
-    buildQueue();
-    renderIndex();
-    $('#index-n').textContent = inRoom(id).length;
-    if (S.started) load(S.i, S.playing);
-    else if (track()) { paintNowPlaying(track()); markRow(); }
-  }
-
-  /* The room's running order is fixed, but the needle drops somewhere
-     different each time you walk in — otherwise every visit opens with
-     the same record. */
-  function buildQueue() {
-    const list = inRoom(S.room);
-    S.queue = S.shuffle ? shuffled(list) : list;
-    S.i = list.length ? Math.floor(Math.random() * list.length) : 0;
-  }
   function shuffled(a) {
     const c = a.slice();
     for (let i = c.length - 1; i > 0; i--) {
@@ -160,23 +86,211 @@
     return c;
   }
 
+  /*  The room's running order is fixed, but the needle drops somewhere
+      different each time you walk in. */
+  function buildQueue(keep) {
+    const list = inRoom(S.room);
+    S.queue = S.shuffle ? shuffled(list) : list;
+    if (keep) {
+      const n = S.queue.findIndex(t => t.v === keep.v);
+      S.i = n < 0 ? 0 : n;
+    } else {
+      S.i = list.length ? Math.floor(Math.random() * list.length) : 0;
+    }
+  }
+
+  /* ═══ the beat clock ════════════════════════════════════════════ */
+
+  const taps = [];
+  function armTrack(t) {
+    S.bpm = (t && store.bpmFor(t.v)) || DEFAULT_BPM;
+    S.phase0 = 0; S.lastBeat = -1; taps.length = 0;
+    $('#bpm').textContent = Math.round(S.bpm);
+    $('#k-tap').classList.toggle('is-set', !!(t && store.bpmFor(t.v)));
+  }
+  function tap() {
+    const now = performance.now() / 1000;
+    if (taps.length && now - taps[taps.length - 1] > 2.2) taps.length = 0;
+    taps.push(now);
+    if (taps.length > 6) taps.shift();
+    if (taps.length >= 2) {
+      let sum = 0;
+      for (let i = 1; i < taps.length; i++) sum += taps[i] - taps[i - 1];
+      S.bpm = clamp(60 / (sum / (taps.length - 1)), 40, 200);
+      S.phase0 = S.elapsed; S.lastBeat = -1;
+      const t = track();
+      if (t) { store.setBpm(t.v, Math.round(S.bpm)); $('#k-tap').classList.add('is-set'); }
+      $('#bpm').textContent = Math.round(S.bpm);
+    }
+  }
+
+  /* ═══ the room ══════════════════════════════════════════════════ */
+
+  /*  A hex to the [0..1] triple the shader wants. */
+  const rgb01 = hex => {
+    const n = parseInt(hex.slice(1), 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  };
+
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  let LOOK = null;
+
+  function paintRoom(id) {
+    const room = roomById(id);
+    document.documentElement.dataset.room = id;
+    /*  The lifted nine, not the darkened nine: this page is black now,
+        so jamun and indigo are the ones that would vanish. See
+        PIGMENT_GLOW in rooms.js. */
+    const [a, b, c] = room.glow;
+    const st = document.documentElement.style;
+    st.setProperty('--pig-a', a);
+    st.setProperty('--pig-b', b);
+    st.setProperty('--pig-c', c);
+    /*  The room's lead pigment IS the page accent, so every chip, key,
+        slider and progress ring follows the room. */
+    st.setProperty('--haz', a);
+    st.setProperty('--haz-deep', room.pigments[0]);
+    if (themeMeta) themeMeta.setAttribute('content', '#08090b');
+    LOOK = { accent: rgb01(a), lamp: rgb01(b), mood: 0.2, party: 0 };
+    $('#now-room').textContent = room.name;
+    $('#now-room-deva').textContent = room.deva;
+    $$('.room-btn').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));
+    railTo(id);
+  }
+
+  /*  Nine rooms will not fit across a phone, so the rail scrolls — and a
+      rail you have to hunt along for the room you are standing in is a
+      broken rail. Measured off rects, not offsetLeft. */
+  function railTo(id) {
+    const rail = $('#rooms-list');
+    const cur  = $(`.room-btn[data-id="${id}"]`);
+    if (!rail || !cur || rail.scrollWidth <= rail.clientWidth) return;
+    const r = rail.getBoundingClientRect(), c = cur.getBoundingClientRect();
+    rail.scrollTo({
+      left: rail.scrollLeft + (c.left + c.width / 2) - (r.left + r.width / 2),
+      behavior: REDUCED ? 'auto' : 'smooth',
+    });
+  }
+
+  function buildRoomNav() {
+    $('#rooms-list').innerHTML = ROOMS.map(r => `
+      <button class="room-btn" type="button" data-id="${r.id}" aria-current="false"
+              aria-label="${esc(r.name)}, ${inRoom(r.id).length} tapes">
+        <span class="room-btn__dial">${esc(r.dial)}</span>
+        <span class="room-btn__deva">${esc(r.deva)}</span>
+      </button>`).join('');
+    $$('.room-btn').forEach(b => b.addEventListener('click', () => setRoom(b.dataset.id)));
+  }
+
+  function setRoom(id, force) {
+    if (id === S.room && S.queue.length && !force) return;
+    S.room = id;
+    paintRoom(id);
+    buildQueue();
+    countUp();
+    renderList();
+    store.patch({ room: id });
+    if (S.started) load(S.i, S.playing);
+    else if (track()) { paint(track()); armTrack(track()); markRow(); }
+  }
+
+  function countUp() {
+    const n = inRoom(S.room).length;
+    $('#n-all').textContent = String(n).padStart(2, '0');
+    $('#list-n').textContent = n;
+    const g = $('#gate-n');
+    if (g) g.textContent = CATALOG.length;
+  }
+
   /* ═══ the rangoli ═══════════════════════════════════════════════ */
 
   function drawRangoli(t) {
-    const room = roomById(S.room);
-    const fig = RG.build(t.v, room.pigments);
+    const fig = RG.build(t.v, roomById(S.room).glow);
     const rec = $('#record');
     $('#rg-body').innerHTML = fig.svg;
     $('#rangoli').setAttribute('aria-label',
       `Rangoli for ${t.t}: ${fig.fold}-fold, ${fig.rings} rings`);
-    // retrigger the draw-on
     rec.classList.remove('is-drawn');
-    void rec.offsetWidth;
+    void rec.offsetWidth;                 // retrigger the draw-on
     rec.classList.add('is-drawn');
   }
+  const setProgress = p =>
+    ($('#rg-progress').style.strokeDashoffset = (CIRC * (1 - clamp(p, 0, 1))).toFixed(1));
 
-  function setProgress(p) {
-    $('#rg-progress').style.strokeDashoffset = (CIRC * (1 - clamp(p, 0, 1))).toFixed(1);
+  /* ═══ the corridor ══════════════════════════════════════════════ */
+
+  let gpu = null;
+  function startCorridor() {
+    const cv = $('#bg');
+    gpu = window.CORRIDOR ? window.CORRIDOR.start(cv) : null;
+    if (!gpu) cv.style.display = 'none';
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+
+    if (ytReady && S.playing && !S.seeking) {
+      S.elapsed = yt.getCurrentTime() || 0;
+      const d = yt.getDuration();
+      if (d) S.duration = d;
+    }
+
+    const beatLen = 60 / S.bpm;
+    if (S.playing) {
+      const n = (S.elapsed - S.phase0) / beatLen;
+      const idx = Math.floor(n), ph = n - idx;
+      S.beat = Math.pow(1 - ph, 3);
+      S.bar  = ((((idx % 4) + 4) % 4) === 0) ? Math.pow(1 - ph, 4) : 0;
+      if (idx !== S.lastBeat) {
+        S.lastBeat = idx;
+        S.kick = 1;
+        const ang = Math.random() * Math.PI * 2;
+        S.shakeX = Math.cos(ang); S.shakeY = Math.sin(ang);
+      }
+    } else {
+      S.beat *= Math.pow(0.02, dt);
+      S.bar  *= Math.pow(0.02, dt);
+    }
+    S.kick *= Math.pow(0.004, dt);
+
+    const F = S.force * FORCE_CAP;
+    S.dist += dt * (S.playing ? (3.4 + 8 * S.beat * F) : 0.5);
+    S.roll  = Math.sin(S.dist * 0.05) * 0.04 * (0.3 + F) +
+              (REDUCED ? 0 : S.kick * F * 0.03 * S.shakeX);
+
+    if (gpu && !gpu.lost() && LOOK) {
+      gpu.draw({ time: now / 1000, dist: S.dist, beat: S.beat, bar: S.bar,
+                 force: F, roll: S.roll, accent: LOOK.accent, lamp: LOOK.lamp,
+                 mood: LOOK.mood, party: LOOK.party });
+    }
+
+    const room = $('#room'), type = $('#type');
+    if (REDUCED) {
+      room.style.transform = ''; type.style.transform = '';
+      type.style.setProperty('--split', '0px');
+    } else {
+      const amp = S.kick * F * 11;
+      room.style.transform =
+        `translate3d(${(S.shakeX * amp).toFixed(2)}px, ${(S.shakeY * amp).toFixed(2)}px, 0)`;
+      type.style.transform =
+        `translate3d(${(S.shakeX * amp * -0.42).toFixed(2)}px, ${(S.shakeY * amp * -0.42).toFixed(2)}px, 0)`;
+      type.style.setProperty('--split', (S.kick * F * 4).toFixed(2) + 'px');
+    }
+    document.documentElement.style.setProperty('--pulse', S.beat.toFixed(3));
+    $('#beatbar').style.opacity = (S.kick * 0.9).toFixed(3);
+
+    if (!S.seeking) {
+      const p = S.duration ? clamp(S.elapsed / S.duration, 0, 1) : 0;
+      $('#t-now').textContent = mmss(S.elapsed);
+      $('#t-all').textContent = mmss(S.duration);
+      $('#fill').style.width = (p * 100).toFixed(2) + '%';
+      $('#beatbar').style.left = (p * 100).toFixed(2) + '%';
+      $('#seek').value = Math.round(p * 1000);
+      setProgress(p);
+    }
+    requestAnimationFrame(frame);
   }
 
   /* ═══ playback ══════════════════════════════════════════════════ */
@@ -194,8 +308,6 @@
           if (pending) { const p = pending; pending = null; load(p.i, p.play); }
         },
         onStateChange: e => {
-          // a track takes a second or three to arrive; say so, or pressing
-          // a button looks like it did nothing
           document.body.toggleAttribute('data-loading', e.data === YT.PlayerState.BUFFERING);
           if (e.data === YT.PlayerState.PLAYING) { S.playing = true; S.duration = yt.getDuration() || 0; }
           else if (e.data === YT.PlayerState.PAUSED) S.playing = false;
@@ -208,7 +320,7 @@
           if (t) S.dead.add(t.v);
           const at = S.i;
           S.queue.splice(at, 1);
-          renderIndex();
+          renderList(); countUp();
           if (!S.queue.length) { buildQueue(); return; }
           load(at % S.queue.length, true);
         },
@@ -221,26 +333,28 @@
     S.i = ((i % S.queue.length) + S.queue.length) % S.queue.length;
     const t = track();
     if (!t) return;
-    if (!ytReady) { pending = { i: S.i, play }; paintNowPlaying(t); return; }
+    armTrack(t);
+    if (!ytReady) { pending = { i: S.i, play }; paint(t); return; }
     S.duration = t.s || 0;
     S.elapsed = 0;
     setProgress(0);
     if (play) yt.loadVideoById(t.v); else yt.cueVideoById(t.v);
-    paintNowPlaying(t);
+    paint(t);
     markRow();
   }
 
-  function paintNowPlaying(t) {
-    // The Devanagari is the title and the Latin beneath it is the
-    // transliteration — but 116 of the 369 records carry no Devanagari
-    // in the catalogue. Those lead with the Latin in the voice face and
-    // drop the second line, rather than showing an empty heading.
+  function paint(t) {
+    /*  The Devanagari is the title and the Latin under it is the
+        transliteration — but 116 of the 369 records carry no Devanagari.
+        Those lead with the Latin in the voice face and drop the second
+        line, rather than showing an empty heading. */
     $('#now-deva').textContent   = t.d || t.t;
     $('#now-title').textContent  = t.d ? t.t : '';
     $('#now-artist').textContent = t.a || '';
     $('#now-film').textContent   = t.al || '';
     $('#now-year').textContent   = t.y || '';
-    $('#now-src').href = 'https://www.youtube.com/watch?v=' + t.v;
+    $('#src').href = 'https://www.youtube.com/watch?v=' + t.v;
+    $('#n-now').textContent = String(S.i + 1).padStart(2, '0');
     drawRangoli(t);
     document.title = t.t + ' — Purani Dhun';
   }
@@ -249,9 +363,9 @@
   const pause  = () => ytReady && yt.pauseVideo();
   const toggle = () => (S.playing ? pause() : play());
   const next   = () => load(S.i + 1, true);
-  // always the previous record. No "restart this one if you are more than
-  // a few seconds in" — pressing back and hearing the same song again is
-  // the thing people complain about.
+  /*  Always the previous record. No "restart this one if you are a few
+      seconds in" — pressing back and hearing the same song is the thing
+      people complain about. */
   const prev   = () => load(S.i - 1, true);
 
   function reflect() {
@@ -267,26 +381,14 @@
     const el = $('#vol');
     el.value = S.volume;
     el.style.setProperty('--p', S.volume + '%');
+    store.patch({ volume: S.volume });
   }
-
-  /* ═══ the clock ═════════════════════════════════════════════════ */
-
-  function tick() {
-    if (ytReady && S.playing && !S.seeking) {
-      S.elapsed = yt.getCurrentTime() || 0;
-      const d = yt.getDuration();
-      if (d) S.duration = d;
-    }
-    if (!S.seeking) {
-      const p = S.duration ? clamp(S.elapsed / S.duration, 0, 1) : 0;
-      $('#now-elapsed').textContent = mmss(S.elapsed);
-      $('#now-total').textContent   = mmss(S.duration);
-      const bar = $('#seek');
-      bar.value = Math.round(p * 1000);
-      bar.style.setProperty('--p', (p * 100).toFixed(2) + '%');
-      setProgress(p);
-    }
-    requestAnimationFrame(tick);
+  function setForce(v) {
+    S.force = clamp(v, 0, 100) / 100;
+    const el = $('#force');
+    el.value = Math.round(S.force * 100);
+    el.style.setProperty('--p', Math.round(S.force * 100) + '%');
+    store.patch({ force: Math.round(S.force * 100) });
   }
 
   /* ═══ the index ═════════════════════════════════════════════════ */
@@ -297,7 +399,7 @@
     const moods   = [...new Set(CATALOG.flatMap(t => t.m))].sort();
     const decades = [...new Set(CATALOG.map(t => t.dc).filter(Boolean))].sort();
     const chip = (k, v, label) =>
-      `<button class="chip" type="button" data-k="${k}" data-v="${v}" aria-pressed="false">${label}</button>`;
+      `<button class="chip" type="button" data-k="${k}" data-v="${esc(v)}" aria-pressed="false">${esc(label)}</button>`;
     $('#filters').innerHTML =
       chip('all', '1', 'Every room') +
       moods.map(m => chip('mood', m, m)).join('') +
@@ -309,7 +411,7 @@
       if (k === 'all') F.allRooms = on;
       else if (k === 'mood') on ? F.moods.add(v) : F.moods.delete(v);
       else on ? F.decades.add(v) : F.decades.delete(v);
-      renderIndex();
+      renderList();
     }));
   }
 
@@ -329,62 +431,52 @@
     return F.allRooms ? rows : orderFor(S.room, rows);
   }
 
-  // every row wears the colour its own rangoli is drawn in
-  const dotFor = t => roomById(S.room).pigments[RG.seedFrom(t.v) % 3];
-
-  function renderIndex() {
+  function renderList() {
     const rows = filtered();
-    $('#ix-count').textContent =
+    $('#list-count').textContent =
       rows.length + (rows.length === 1 ? ' tape' : ' tapes') +
-      (F.allRooms ? ' · every room' : ' · ' + roomById(S.room).name);
-    $('#ix-empty').hidden = rows.length > 0;
-    $('#ix-list').innerHTML = rows.map((t, n) => `
-      <li><button class="row" type="button" data-v="${t.v}" aria-current="false">
-        <span class="row__dot" style="--dot:${dotFor(t)}"></span>
+      ' · ' + (F.allRooms ? 'every room' : roomById(S.room).name);
+    $('#none').hidden = rows.length > 0;
+    $('#rows').innerHTML = rows.map((t, n) => `
+      <li><button class="row" type="button" data-v="${esc(t.v)}" aria-current="false">
         <span class="row__i">${String(n + 1).padStart(2, '0')}</span>
-        <span class="row__d">${esc(t.d || t.t)}</span>
-        ${t.d ? `<span class="row__t">${esc(t.t)}</span>` : ''}
-        <span class="row__s">${t.s ? mmss(t.s) : '—'}</span>
+        <span class="row__t">${esc(t.d || t.t)}</span>
         <span class="row__a">${esc(t.a)}${t.al ? ' · ' + esc(t.al) : ''}${t.y ? ' · ' + t.y : ''}</span>
+        <span class="row__s">${t.s ? mmss(t.s) : '—'}</span>
       </button></li>`).join('');
-    $$('#ix-list .row').forEach(b => b.addEventListener('click', () => pickByVideo(b.dataset.v)));
+    $$('#rows .row').forEach(b => b.addEventListener('click', () => pick(b.dataset.v)));
     markRow();
   }
 
-  function pickByVideo(v) {
+  function pick(v) {
     let n = S.queue.findIndex(t => t.v === v);
     if (n < 0) {
       const t = CATALOG.find(x => x.v === v);
       if (!t) return;
-      if (!t.r.includes(S.room)) {
-        S.room = t.r[0];
-        paintRoom(S.room);
-        buildQueue();
-        $('#index-n').textContent = inRoom(S.room).length;
-      }
+      if (!t.r.includes(S.room)) { S.room = t.r[0]; paintRoom(S.room); buildQueue(); countUp(); }
       n = S.queue.findIndex(x => x.v === v);
       if (n < 0) return;
     }
     S.started = true;
     load(n, true);
-    openIndex(false);
+    openList(false);
   }
 
   function markRow() {
     const t = track();
-    $$('#ix-list .row').forEach(b =>
+    $$('#rows .row').forEach(b =>
       b.setAttribute('aria-current', String(!!t && b.dataset.v === t.v)));
   }
 
-  function openIndex(open) {
-    const ix = $('#index');
-    if (open) ix.hidden = false;
+  function openList(open) {
+    const el = $('#list');
+    if (open) el.hidden = false;
     requestAnimationFrame(() => {
-      ix.toggleAttribute('data-open', open);
-      if (!open) setTimeout(() => { ix.hidden = true; }, 340);
+      el.toggleAttribute('data-open', open);
+      if (!open) setTimeout(() => { el.hidden = true; }, 300);
     });
-    $('#index-toggle').setAttribute('aria-expanded', String(open));
-    if (open) setTimeout(() => $('#q').focus(), 200);
+    $('#k-list').setAttribute('aria-expanded', String(open));
+    if (open) setTimeout(() => $('#q').focus(), 180);
   }
 
   /* ═══ wiring ════════════════════════════════════════════════════ */
@@ -393,25 +485,21 @@
     $('#k-play').addEventListener('click', () => { S.started = true; toggle(); });
     $('#k-next').addEventListener('click', next);
     $('#k-prev').addEventListener('click', prev);
+    $('#k-tap').addEventListener('click', tap);
+
     $('#k-shuffle').addEventListener('click', () => {
       S.shuffle = !S.shuffle;
       $('#k-shuffle').setAttribute('aria-pressed', String(S.shuffle));
-      const cur = track();
-      buildQueue();
-      if (cur) {
-        const n = S.queue.findIndex(t => t.v === cur.v);
-        if (n > 0) { S.queue.splice(n, 1); S.queue.unshift(cur); }
-        S.i = 0;
-      }
-      renderIndex();
+      buildQueue(track());
+      renderList();
     });
 
     const seek = $('#seek');
     seek.addEventListener('pointerdown', () => { S.seeking = true; });
     seek.addEventListener('input', () => {
       const p = seek.value / 1000;
-      seek.style.setProperty('--p', (p * 100).toFixed(2) + '%');
-      $('#now-elapsed').textContent = mmss(p * S.duration);
+      $('#fill').style.width = (p * 100).toFixed(2) + '%';
+      $('#t-now').textContent = mmss(p * S.duration);
       setProgress(p);
     });
     const commit = () => {
@@ -423,20 +511,21 @@
     seek.addEventListener('pointerup', commit);
 
     $('#vol').addEventListener('input', e => setVolume(e.target.value));
+    $('#force').addEventListener('input', e => setForce(+e.target.value));
 
-    $('#index-toggle').addEventListener('click', () =>
-      openIndex($('#index-toggle').getAttribute('aria-expanded') !== 'true'));
-    $('#index-close').addEventListener('click', () => openIndex(false));
+    $('#k-list').addEventListener('click', () =>
+      openList($('#k-list').getAttribute('aria-expanded') !== 'true'));
+    $('#list-close').addEventListener('click', () => openList(false));
     let qt;
     $('#q').addEventListener('input', e => {
       clearTimeout(qt);
-      qt = setTimeout(() => { F.q = e.target.value; renderIndex(); }, 130);
+      qt = setTimeout(() => { F.q = e.target.value; renderList(); }, 130);
     });
 
     addEventListener('keydown', e => {
       const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
-      if (e.key === '/' && !typing) { e.preventDefault(); openIndex(true); return; }
-      if (e.key === 'Escape') { openIndex(false); return; }
+      if (e.key === '/' && !typing) { e.preventDefault(); openList(true); return; }
+      if (e.key === 'Escape') { openList(false); return; }
       if (typing) return;
       switch (e.key) {
         case ' ':          e.preventDefault(); S.started = true; toggle(); break;
@@ -445,12 +534,13 @@
         case 'ArrowUp':    e.preventDefault(); setVolume(S.volume + 5); break;
         case 'ArrowDown':  e.preventDefault(); setVolume(S.volume - 5); break;
         case 's': case 'S': $('#k-shuffle').click(); break;
+        case 't': case 'T': tap(); break;
         default:
           if (/^[1-9]$/.test(e.key)) { const r = ROOMS[+e.key - 1]; if (r) setRoom(r.id); }
       }
     });
 
-    $('#gate-enter').addEventListener('click', () => {
+    $('#gate-go').addEventListener('click', () => {
       $('#gate').setAttribute('data-open', '');
       S.started = true;
       load(S.i, true);
@@ -467,28 +557,32 @@
   /* ═══ boot ══════════════════════════════════════════════════════ */
 
   function boot() {
+    const saved = store.read();
+    if (ROOMS.some(r => r.id === saved.room)) S.room = saved.room;
+
+    startCorridor();
     buildRoomNav();
     buildFilters();
-    paintRoom(S.room);
-    buildQueue();
-    renderIndex();
-    $('#index-n').textContent = inRoom(S.room).length;
+    wire();
+
+    setVolume(typeof saved.volume === 'number' ? saved.volume : 80);
+    setForce(typeof saved.force === 'number' ? saved.force : (REDUCED ? 100 : 55));
+
+    setRoom(S.room, true);
     $('#rg-progress').style.strokeDasharray = CIRC.toFixed(1);
     setProgress(0);
-    if (track()) paintNowPlaying(track());
-    setVolume(S.volume);
+    if (track()) { paint(track()); armTrack(track()); }
 
-    // a rangoli behind the door, so the idea lands before you press anything
+    /*  A rangoli behind the door, so the idea lands before you press
+        anything. Static — the rings are not turning yet. */
     const gateSvg = $('#gate-rangoli');
-    // the door's rangoli is drawn in ink, not powder. It sits behind the
-    // wordmark at low opacity, and raw haldi at 1.45:1 knocked back that
-    // far is simply not there.
-    if (gateSvg) gateSvg.innerHTML = RG.build('purani-dhun', roomById(S.room).inks).svg
-      .replace(/class="rg-ring[^"]*"/g, 'class="rg-static"');
+    if (gateSvg) {
+      gateSvg.innerHTML = RG.build('purani-dhun', roomById(S.room).glow).svg
+        .replace(/class="rg-ring[^"]*"/g, 'class="rg-static"');
+    }
 
-    wire();
     loadYT();
-    requestAnimationFrame(tick);
+    requestAnimationFrame(frame);
   }
 
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);

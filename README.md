@@ -1,8 +1,8 @@
 # Purani Dhun — पुरानी धुन
 
-369 old Hindi and Punjabi records in nine rooms. Every song draws its own
-rangoli, and the rangoli is the record: its rings turn while the tape runs
-and the circle around the outside is how far through you are.
+369 old Hindi and Punjabi records in nine rooms, on a dark ground. Every
+song draws its own rangoli, lit in the room's own colours, and the circle
+around the outside is how far through the song you are.
 
 Audio streams from each track's own YouTube source. Nothing is hosted here
 and the picture stays off.
@@ -41,99 +41,51 @@ only for local preview and can be deleted before deploying.
 ## What is where
 
 ```
-index.html                    the player, and nothing else
-assets/css/purani-dhun.css    one stylesheet, sectioned and commented
+assets/css/loha.css           THE SYSTEM. Both pages load it first.
+assets/js/corridor.js         one WebGL shader: the tunnel, both pages
+
+index.html                    the player — nine rooms of old records
+assets/css/dhun.css           this page's half: the rangoli, the rail
 assets/js/catalog.js          369 tracks, factual metadata only
 assets/js/rooms.js            nine rooms: three pigments and a sentence each
 assets/js/rangoli.js          the generative engine
-assets/js/app.js              queue, YouTube, index, keyboard
-assets/img/favicon.svg        the only image the page itself loads
-assets/img/og.png             link previews only; never fetched by the page
+assets/js/app.js              queue, YouTube, tempo clock, rooms, index
 
-gym.html                      Loha — the gym page, its own thing entirely
-assets/css/loha.css           dark, and shares no tokens with the board
+gym.html                      Loha — the gym playlist, four decks
+assets/css/loha.css           (see above; the gym page adds nothing)
 assets/js/gym-catalog.js      499 Punjabi tracks, one flat list
-assets/js/corridor.js         one WebGL shader: the tunnel
-assets/js/loha.js             queue, YouTube, tempo clock, shake
+assets/js/loha.js             queue, YouTube, tempo clock, decks
+
+assets/img/favicon.svg        the only image either page loads
+assets/img/og.png             link previews only; never fetched by a page
 ```
 
-The whole site is about 260 KB before fonts. There is not a single
-photograph in it, and the only bitmap anywhere is the link-preview card.
+No build step, no dependencies, no photographs. The only bitmap anywhere
+is the link-preview card.
 
-Two pages, deliberately unalike. `index.html` is the pale board and the
-nine rooms of old records; `gym.html` is a dark corridor of Punjabi gym
-music that opens only when you click **Gym Playlist** at the end of the
-room rail. They share the repo, the Khand typeface and the no-build rule,
-and nothing else — see [The gym page](#the-gym-page--ਲੋਹਾ--loha) at the
-bottom of this file.
+**Two pages, one design.** They used to be opposites — a pale cement board
+here, a dark corridor there — and that was a decision, until it wasn't.
+The site now runs the corridor on both. `loha.css` holds everything they
+share: the tokens, the corridor layers, the plate keys, the chips, the
+door, the rack. `dhun.css` holds only what this page has and the gym page
+does not.
 
-## Type
+What each page keeps is what makes it itself:
 
-Two families, and both of them set Devanagari and Latin from one hand, so
-the two scripts are siblings rather than neighbours:
-
-| Token | Face | Does |
+| | `index.html` | `gym.html` |
 | --- | --- | --- |
-| `--voice` | Tiro Devanagari Hindi | the wordmark, the song, the search field |
-| `--sign` | Khand | every control, legend, numeral and label |
+| centre of the screen | a rangoli, one per song | the corridor, uninterrupted |
+| the cut | nine **rooms** | four **decks** |
+| the voice face | Tiro Devanagari Hindi | Tiro Gurmukhi |
+| titles set in | Devanagari, Latin beneath | Latin |
+| accent colour | the room's lead pigment | the deck's |
+| default tempo | 84 BPM | 96 BPM |
 
-Tiro is the voice: a calligraphic Devanagari with real pen contrast, drawn
-by a foundry that treats the script as a script rather than as a glyph
-range bolted onto a Latin. It ships in **one weight, 400** — that is not a
-limitation to work around but the reason it looks drawn instead of set at
-the sizes the wordmark uses. Khand is the machine: an Indian Type Foundry
-condensed face that is already the lettering of shop boards and bus
-destination plates, which is exactly the register a deck legend wants.
-
-**Devanagari leads.** On a cassette inlay the Hindi title *was* the title
-and the Latin underneath it was the transliteration, so that is the order
-here — देवनागरी first and large, Latin beneath it in signage caps. The
-previous build had this backwards, declaring Devanagari a first-class
-script and then styling it everywhere as an accessory: smaller than the
-Latin, in secondary ink, at reduced opacity.
-
-116 of the 369 records carry no Devanagari title in the catalogue. Those
-lead with their Latin title in the voice face and drop the second line,
-rather than showing an empty heading — see `now__title:empty` in the
-stylesheet and the `t.d || t.t` fallbacks in `app.js`.
-
-There is no monospace token and no `.eyebrow`. A mono face used for every
-small label, tracked out past `.2em` in uppercase, is the single most
-recognisable tell in generated CSS, and the old stylesheet had ten
-near-miss variants of it at ten hand-picked sizes and trackings.
-
-## The door
-
-A browser will not start audio without a gesture, so the first screen has
-to exist anyway. It may as well say what the place is.
-
-The rangoli behind it is drawn in **ink, not powder** — knocked back to
-0.38 opacity, raw haldi at 1.45:1 is simply not there. And the mask over
-it is a halo rather than a backdrop: it clears the middle so the wordmark
-and the line sit on open ground, keeps the band of rings around them, then
-fades before the edges. The figure rings the text the way a rangoli rings a
-doorway, instead of being a watermark printed underneath it.
-
-The line under the wordmark is set in the voice face, italic, because it is
-the archive talking rather than the interface. The last clause of the fine
-print is hidden below 560px — on a phone it wraps mid-phrase otherwise.
-
-## The controls
-
-Everything you can touch is one of two things.
-
-A **key** is pressed. It stands proud of the board on a lip and travels
-*downward* into it when you press it, the way a cassette deck key does.
-Nothing on this page lifts toward the cursor — the `translateY(-1px)`
-hover lift is the web's reflex, not a material one.
-
-A **label** only names a thing. It is a spine on a shelf of cassettes: set
-in signage caps and underscored, never boxed and never filled. The nine
-rooms are labels, the filters are labels.
-
-There are no pills anywhere. `border-radius:999px` on a hairline-bordered
-button is a default, not a decision, and the old build used it for the
-buttons, the room rail and the filter chips alike.
+The two title rules are opposite on purpose. A Hindi cassette inlay printed
+the Devanagari as the title and the Latin under it as the transliteration,
+so that is the order here. Modern Punjabi releases are marketed in Latin —
+Speed Records prints "Bambiha Bole" on the artwork, not ਬੰਬੀਹਾ ਬੋਲੇ — so
+that is the order there. Same system, opposite call, both deliberate.
 
 ## The rangoli
 
@@ -148,17 +100,21 @@ Each record draws its own. The **video id seeds the geometry**:
   chevron, dots or a plain band
 - stroke weights, phase offsets, and which way each ring turns
 
-The **room supplies the pigments** — turmeric, vermilion, saffron, gulal,
-jamun, indigo, peacock, neem, dhoop — one triad per room, and no two rooms
-lead with the same colour.
+The **room supplies the pigments**, one triad per room, and no two rooms
+lead with the same colour. So the same song looks the same every time you
+play it, looks different from every other song, and changes colour when
+you carry it into another room. Sampled over 120 records, 115 produced a
+distinct fold/ring/motif signature before phase and colour are counted.
 
-So the same song looks the same every time you play it, looks different
-from every other song, and changes colour when you carry it into another
-room. Rings counter-rotate on staggered clocks (26s, 35s, 44s, 53s, 62s)
-and hold still the moment you pause, like a lifted needle.
+On black it is **lit rather than printed**. Two drop-shadows: a dark one to
+separate it from the corridor, and a coloured one that is the light it is
+giving off. Filled motifs are held at `fill-opacity:.78` — opaque, a solid
+disc reads as a sticker pasted over the corridor; held just off full it
+reads as lit glass with the room still behind it.
 
-Sampled over 120 records, 115 produced a distinct fold/ring/motif
-signature before phase and colour are even counted.
+The figure breathes on the beat rather than on a loop of its own: `app.js`
+writes `--pulse` every frame, so the rangoli, the corridor and the shake
+are all on one clock.
 
 ## Rooms
 
@@ -168,28 +124,37 @@ open every room with the same record. Each room instead sorts its own list
 by a hash of `(room id + video id)` — stable across reloads, different in
 every room.
 
-### Powder and ink
+The room's lead pigment is written straight into `--haz`, the accent token
+the whole system reads. Walk into 90s Dard and the plates, the sliders, the
+progress ring, the corridor's lamps and the rangoli all go jamun together.
 
-Every pigment exists twice, and the difference is not decorative.
+### Powder, ink, and glow
 
-`--pig-a` is the **powder**: the raw, saturated colour, used for the
-rangoli's own figure, where the shapes are large and vibrancy is the whole
-point. `--pig-a-ink` is the same pigment darkened until it clears 4.5:1
-against the board — used for anything you have to *read*: the progress
-ring, the numerals, the focus outline, a live label, an engaged key.
+Every pigment exists **three times**, and none of it is decorative.
 
-Without that split three of the nine pigments are effectively invisible on
-a light ground. Raw haldi is **1.45:1**, kesari 2.28 and dhoop 2.39, and
-two rooms lead with one of them: Auto Galli opened in turmeric with a
-progress ring you could not see. In ink, haldi is 4.59:1.
+| Set | For | Ground |
+| --- | --- | --- |
+| `PIGMENT` | the rangoli's own figure, saturated | — |
+| `PIGMENT_INK` | reading, when the site was pale | `#e4e2dc` |
+| `PIGMENT_GLOW` | reading, now that it is dark | `#08090b` |
 
-The ink values in `rooms.js` are the worst case across all ten grounds the
-page can paint — the bare board plus the nine room washes — because the
-wash darkens the board slightly and takes a little contrast with it. If you
-change `BASE` in `app.js` or add a pigment, re-derive them; do not eyeball
-it.
+`PIGMENT_INK` is each pigment darkened until it clears 4.5:1 on the old
+board. `PIGMENT_GLOW` is the mirror of it, and it catches the **opposite
+end of the same nine**. On the pale board the problem children were the
+bright ones — haldi at 1.47:1, kesari 2.37, dhoop 2.49 — and they had to
+come down. On black it is the deep ones that vanish: jamun is 2.67:1 raw
+and indigo 2.42:1. Those two are lifted (to `#9661ca` and `#5e73d4`),
+peacock goes up one step, and **the other six are left exactly as they
+are** — lifting a colour that does not need it only washes the room out.
+Hue and saturation are held; only lightness moves.
+
+`PIGMENT_INK` is kept even though nothing paints on `#e4e2dc` any more. It
+is the working for a decision, and deleting it would leave the next person
+re-deriving it from scratch to answer "why these nine?".
 
 ## Keyboard
+
+Both pages share the transport; only the last row differs.
 
 | Key | Does |
 | --- | --- |
@@ -197,9 +162,11 @@ it.
 | `←` `→` | previous / next track |
 | `↑` `↓` | volume |
 | `S` | shuffle |
-| `/` | open the index and search |
-| `1`–`9` | jump to a room |
-| `Esc` | close the index |
+| `T` | tap the tempo |
+| `/` | open the rack and search |
+| `Esc` | close the rack |
+| `1`–`9` | walk into a room *(index.html)* |
+| `1`–`4` | Now / The Era / Badmashi / Dance *(gym.html)* |
 
 ## Notes
 
@@ -222,41 +189,32 @@ it.
   Playback is handed to YouTube, which counts the play and pays the rights
   holder.
 - **Three CSS traps worth knowing** if you edit this.
-  1. `#index{display:flex}` outranks the browser's `[hidden]{display:none}`,
+  1. `#list{display:flex}` outranks the browser's `[hidden]{display:none}`,
      because an id selector beats an attribute selector. That left the
-     closed track panel sitting invisibly over the whole player at
-     `z-index:60`, swallowing every click. It now carries an explicit
-     `#index[hidden]{display:none}` and `pointer-events:none` when closed.
-     If you add another overlay, do the same.
-  2. A transition on a property whose value comes from a custom property
-     does not re-fire when only that custom property changes, so the room
-     wash is set directly on `document.body` from JS.
-  3. A single-column grid defaults to an `auto` column, which stretches to
-     its widest child — the nine-pill room rail — and pushes the page
-     sideways. `grid-template-columns:minmax(0,1fr)` pins it.
-- The design is committed to light. The board is `#e4e2dc` — a swept
-  cement grey, not a warm cream. There is no dark mode; adding one means
-  re-tuning all nine pigments *and* all nine inks against a dark ground.
-  `html{color-scheme:light}` says so out loud, which stops a phone in dark
-  mode force-darkening the range inputs, the search field and the
-  scrollbar against a board that stays pale regardless.
-- **The phone's own furniture takes the room colour too.** `paintRoom()`
-  writes the current wash into `<meta name="theme-color">` as well as onto
-  the body, so Chrome's address bar on Android and Safari's status and tab
-  bars on iOS carry it — the room runs to the top and bottom edges of the
-  screen instead of stopping at the page. The nine washes are close but
-  distinct: Saloon is `#daded8`, Auto Galli `#e5e0d3`, Mistri Kaam
-  `#e4dbd5`.
-
-  This is why `wash()` returns hex rather than `rgb(r g b)`. The
-  space-separated form is fine in CSS but is not parsed inside a
-  `theme-color` meta by every browser that supports `theme-color` at all,
-  and it fails silently — the bar just stays default. If you change
-  `wash()`, keep it emitting hex.
+     closed track panel sitting invisibly over the whole player, swallowing
+     every click. Both pages carry an explicit `#list[hidden]{display:none}`
+     and `pointer-events:none` when closed. If you add another overlay, do
+     the same.
+  2. A `::before` separator between optional fields wants the **general**
+     sibling combinator, not the adjacent one. `span + span` leaves a
+     leading "· " when the first field is blank; `span:not(:empty) + span`
+     fixes that and then swallows the separator when the *middle* field is
+     blank. `span:not(:empty) ~ span:not(:empty)` asks the actual question:
+     did any field come before this one. See `.tags` in `dhun.css`.
+  3. A full-screen shader is fill-rate bound, so `corridor.js` caps the
+     pixel ratio at 1.75 rather than taking the device's own. Above that
+     there is nothing left to see and a phone just gets hot.
+- **The whole thing is dark now, and says so.** `html{color-scheme:dark}`
+  stops a browser force-*lightening* the range inputs, the search field and
+  the scrollbar. `<meta name="theme-color">` is pinned to the void rather
+  than following the room: the accent changes on every room change, and a
+  phone's address bar strobing through nine colours as you walk the rail is
+  worse than one that simply matches the page.
 - `assets/img/og.png` (1200×630) is generated by the site's own rangoli
-  engine, drawn to a canvas and exported. It does **not** update itself: if
-  the board colour, the pigments or the wordmark change, it will keep
-  showing the old ones, and so will every link preview. Regenerate it, and
+  engine, drawn to a canvas and exported. **It is currently out of date**:
+  it still shows the pale board this site no longer has. Regenerating it
+  against the dark ground is the one loose end of the redesign. It does not
+  update itself, and neither does any link preview already cached. Regenerate it, and
   fix `og:image:alt` to match — the alt text names the actual colours.
   Note that canvas resolves a webfont only when that exact weight has
   already been loaded, so `document.fonts.load()` every weight the image

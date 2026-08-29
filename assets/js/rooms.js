@@ -51,15 +51,42 @@
     neem:    '#436a1d',  /* 4.58:1 */
   };
 
+  /*  The same nine again, this time lifted until each clears 4.5:1
+   *  against the DARK ground (#08090b) the site now runs on.
+   *
+   *  It is the mirror of PIGMENT_INK and it catches the opposite end of
+   *  the nine. On the pale board the problem children were the bright
+   *  ones — haldi at 1.47:1, kesari 2.37, dhoop 2.49 — and they had to be
+   *  darkened. On black it is the deep ones that vanish: jamun is 2.67:1
+   *  and indigo 2.42:1 raw. Six of the nine are already legible on black
+   *  and are left exactly as they are; lifting a colour that does not
+   *  need it only washes the room out.
+   *
+   *  Hue and saturation are held; only lightness moves.
+   */
+  const PIGMENT_GLOW = {
+    haldi:   '#f2b01e',  /* 10.44:1 — left alone */
+    sindoor: '#e03e3e',  /*  4.67:1 — left alone */
+    kesari:  '#ef6c1a',  /*  6.48:1 — left alone */
+    gulal:   '#e2418b',  /*  5.09:1 — left alone */
+    jamun:   '#9661ca',  /*  4.61:1 — lifted from #7038a8 (2.67:1) */
+    indigo:  '#5e73d4',  /*  4.63:1 — lifted from #2e44ad (2.42:1) */
+    dhoop:   '#0d9bc4',  /*  6.17:1 — left alone */
+    peacock: '#00897d',  /*  4.62:1 — one step up from #00887c */
+    neem:    '#5c9128',  /*  5.25:1 — left alone */
+  };
+
   const room = (id, dial, name, deva, line, pigs) => ({
     id, dial, name, deva, line,
     pigments: pigs.map(p => PIGMENT[p]),
     inks: pigs.map(p => PIGMENT_INK[p]),
+    glow: pigs.map(p => PIGMENT_GLOW[p]),
     pigmentNames: pigs,
   });
 
   window.PIGMENT = PIGMENT;
   window.PIGMENT_INK = PIGMENT_INK;
+  window.PIGMENT_GLOW = PIGMENT_GLOW;
 
   window.ROOMS = [
     room('saloon-classics', 'Saloon', 'Saloon Classics', 'सैलून क्लासिक्स',

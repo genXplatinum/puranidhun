@@ -1,17 +1,30 @@
 /* ═══════════════════════════════════════════════════════════════════
-   LOHA — ਲੋਹਾ
-   The gym room, and the one page on this site that is not the board.
+   THE SYSTEM
+   Both pages load this file first. It is named loha.css because the gym
+   page is where it was worked out.
    ─────────────────────────────────────────────────────────────────
-   Purani Dhun is swept cement, pale, and every control is a cassette
-   deck key. None of that belongs here. This is the other end of the
-   same street: a lit corridor in the dark, hazard paint, and type cut
-   big enough to read from the floor with a bar on your back.
+   This began as the gym page's own stylesheet, against a main site that
+   was pale swept cement with cassette-deck keys. The two were opposites
+   on purpose, until the site went dark everywhere — at which point the
+   opposition was just two stylesheets doing the same job twice.
 
-   What carries over is the discipline, not the palette. Still no
-   photographs, still no dependencies, still one weight of meaning per
-   element. Khand does the shouting because it already is the lettering
-   on Indian shop boards; Tiro Gurmukhi says the name, because these are
-   Punjabi records and Gurmukhi is their script.
+   So everything here is shared: the tokens, the corridor layers, the
+   plate keys, the chips, the sliders, the door, the rack of tracks, and
+   the narrow-screen and reduced-motion rules for all of it.
+
+   What is NOT here is anything only one page has. index.html adds
+   dhun.css for the rangoli and the room rail; gym.html adds nothing.
+
+   Two tokens are repointed rather than duplicated:
+     --gur    the voice face. Tiro Gurmukhi on the gym page (Punjabi
+              records), Tiro Devanagari Hindi on the main one, which
+              dhun.css sets. Every rule that reaches for the voice keeps
+              working either way.
+     --haz    the accent. Written from JS — the deck's colour on the gym
+              page, the room's lead pigment on the main one.
+
+   Khand does the shouting on both, because it already is the lettering
+   on Indian shop boards.
    ─────────────────────────────────────────────────────────────────
    1  tokens
    2  reset

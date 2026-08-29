@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" data-gym>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loha — Gym Playlist | Purani Dhun</title>
+<meta name="description" content="Punjabi gym playlist. Sidhu Moose Wala, Karan Aujla, Ninja, Varinder Brar — heavy Punjabi records in an iron corridor that moves with the beat.">
+<meta name="theme-color" content="#08090b">
+<link rel="canonical" href="https://puranidhun.in/gym.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://puranidhun.in/gym.html">
+<meta property="og:site_name" content="Purani Dhun">
+<meta property="og:title" content="LOHA — ਲੋਹਾ · the gym playlist">
+<meta property="og:description" content="The other nine rooms are for remembering. This one is for lifting. Heavy Punjabi records, in an iron corridor that moves with the beat.">
+<meta property="og:image" content="https://puranidhun.in/assets/img/og.png?v=2">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LOHA — ਲੋਹਾ · the gym playlist">
+<meta name="twitter:description" content="The other nine rooms are for remembering. This one is for lifting.">
+<meta name="twitter:image" content="https://puranidhun.in/assets/img/og.png?v=2">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Khand is the machine, same as the main site. Tiro Gurmukhi is the
+     voice here rather than Tiro Devanagari: these are Punjabi records. -->
+<link href="https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&family=Tiro+Gurmukhi&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/loha.css">
+</head>
+<body>
+
+<!-- the audio host: rendered, because browsers throttle a display:none
+     iframe, but 1px and inert. No picture here either. -->
+<div id="yt-host" aria-hidden="true"><div id="yt-player"></div></div>
+
+<a class="skip" href="#deck">Skip to the player</a>
+
+<!-- ══ the corridor ═════════════════════════════════════════════════
+     A WebGL tunnel. If the context will not come up, the CSS behind it
+     is a lit concrete floor and the page carries on without it. -->
+<div id="room" aria-hidden="true"><canvas id="bg"></canvas></div>
+<div id="vig" aria-hidden="true"></div>
+<div id="grain" aria-hidden="true"></div>
+
+<!-- The room shakes and the type shakes. The CONTROLS DO NOT: a key you
+     have to chase around the screen is a broken key, and that goes double
+     for anyone whose hands are not steady to begin with. -->
+<div id="shell">
+
+  <header id="top">
+    <a class="back" href="/">&larr; <span>Purani Dhun</span></a>
+    <p class="mark">
+      <b class="mark__gur">ਲੋਹਾ</b>
+      <span class="mark__lat">Loha &middot; Gym Playlist</span>
+    </p>
+    <p class="stat"><span id="n-now">--</span><i>/</i><span id="n-all">--</span></p>
+  </header>
+
+  <!-- the two decks. One page, one corridor, two playlists. -->
+  <nav id="decks" aria-label="Playlists">
+    <button class="deck-btn" type="button" data-deck="now" aria-pressed="true">
+      <b>Now</b><span>2019 &rarr;</span>
+    </button>
+    <button class="deck-btn" type="button" data-deck="era" aria-pressed="false">
+      <b>The Era</b><span>2005&ndash;18</span>
+    </button>
+  </nav>
+
+  <main id="deck">
+    <div id="type">
+      <p class="cue" id="cue">Loaded</p>
+      <h1 class="title" id="title">&nbsp;</h1>
+      <p class="by" id="by">&nbsp;</p>
+      <p class="tags"><span id="year"></span><span id="film"></span></p>
+    </div>
+
+    <!-- the bar: a lift, not a scrub. It loads with plates as the song runs -->
+    <div class="bar">
+      <span class="bar__t" id="t-now">0:00</span>
+      <div class="bar__rail">
+        <div class="bar__fill" id="fill"></div>
+        <div class="bar__beat" id="beatbar"></div>
+        <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
+      </div>
+      <span class="bar__t" id="t-all">0:00</span>
+    </div>
+
+    <div class="keys">
+      <button id="k-prev" class="key" type="button" aria-label="Previous track">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14L8 12zM7 5v14"/></svg>
+      </button>
+      <button id="k-play" class="key key--go" type="button" aria-label="Play" aria-pressed="false">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l12 7-12 7z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v14H8zM14 5h3v14h-3z"/></svg>
+      </button>
+      <button id="k-next" class="key" type="button" aria-label="Next track">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14l10-7zM17 5v14"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <footer id="bot">
+    <div class="rack">
+      <button id="k-shuffle" class="chip" type="button" aria-pressed="false">Shuffle</button>
+      <button id="k-tap" class="chip" type="button" aria-label="Tap the tempo">
+        Tap <b id="bpm">--</b>
+      </button>
+      <label class="slide">
+        <span>Force</span>
+        <input id="force" type="range" min="0" max="100" value="70" step="1" aria-label="Force — how hard the room reacts">
+      </label>
+      <label class="slide slide--vol">
+        <span>Vol</span>
+        <input id="vol" type="range" min="0" max="100" value="85" step="1" aria-label="Volume">
+      </label>
+      <button id="k-haptic" class="chip" type="button" aria-pressed="false">Haptics</button>
+      <a id="src" class="chip" href="#" target="_blank" rel="noopener">Source</a>
+      <button id="k-list" class="chip chip--n" type="button" aria-expanded="false" aria-controls="list">
+        <b id="list-n">0</b> tracks
+      </button>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ the door ═════════════════════════════════════════════════════ -->
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-h">
+  <div class="gate__in">
+    <p class="gate__kick">Purani Dhun</p>
+    <h2 id="gate-h" class="gate__mark"><b>ਲੋਹਾ</b><span>Loha</span></h2>
+    <p class="gate__line">The other nine rooms are for remembering.
+      This one is for lifting.</p>
+    <button id="gate-go" type="button" class="gate__key">Load the bar</button>
+    <p class="gate__fine"><span id="gate-n">0</span> Punjabi records &middot;
+      two decks &middot; heavy only</p>
+  </div>
+</div>
+
+<!-- ══ the rack ═════════════════════════════════════════════════════ -->
+<aside id="list" aria-label="Track list" hidden>
+  <div class="list__bar">
+    <input id="q" type="search" placeholder="Search a track or an artist…" aria-label="Search tracks" autocomplete="off">
+    <button id="list-close" class="chip" type="button">Close</button>
+  </div>
+  <p class="list__count" id="list-count"></p>
+  <ol class="list__rows" id="rows"></ol>
+  <p class="list__none" id="none" hidden>Nothing under that name.</p>
+</aside>
+
+<script src="assets/js/gym-catalog.js"></script>
+<script src="assets/js/corridor.js"></script>
+<script src="assets/js/loha.js"></script>
+</body>
+</html>

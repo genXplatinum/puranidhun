@@ -1,8 +1,7 @@
 # Purani Dhun — पुरानी धुन
 
-394 Hindi and Punjabi records in ten rooms. Nine of the rooms are the old
-records the site is named for; the tenth is a gym playlist and is not old at
-all. Every song draws its own rangoli, and the rangoli is the record: its rings turn while the tape runs
+369 old Hindi and Punjabi records in nine rooms. Every song draws its own
+rangoli, and the rangoli is the record: its rings turn while the tape runs
 and the circle around the outside is how far through you are.
 
 Audio streams from each track's own YouTube source. Nothing is hosted here
@@ -44,16 +43,29 @@ only for local preview and can be deleted before deploying.
 ```
 index.html                    the player, and nothing else
 assets/css/purani-dhun.css    one stylesheet, sectioned and commented
-assets/js/catalog.js          394 tracks, factual metadata only
-assets/js/rooms.js            ten rooms: three pigments and a sentence each
+assets/js/catalog.js          369 tracks, factual metadata only
+assets/js/rooms.js            nine rooms: three pigments and a sentence each
 assets/js/rangoli.js          the generative engine
 assets/js/app.js              queue, YouTube, index, keyboard
 assets/img/favicon.svg        the only image the page itself loads
 assets/img/og.png             link previews only; never fetched by the page
+
+gym.html                      Loha — the gym page, its own thing entirely
+assets/css/loha.css           dark, and shares no tokens with the board
+assets/js/gym-catalog.js      298 Punjabi tracks in two decks by year
+assets/js/corridor.js         one WebGL shader: the tunnel
+assets/js/loha.js             queue, YouTube, tempo clock, shake
 ```
 
-The whole site is about 200 KB before fonts. There is not a single
+The whole site is about 260 KB before fonts. There is not a single
 photograph in it, and the only bitmap anywhere is the link-preview card.
+
+Two pages, deliberately unalike. `index.html` is the pale board and the
+nine rooms of old records; `gym.html` is a dark corridor of Punjabi gym
+music that opens only when you click **Gym Playlist** at the end of the
+room rail. They share the repo, the Khand typeface and the no-build rule,
+and nothing else — see [The gym page](#the-gym-page--ਲੋਹਾ--loha) at the
+bottom of this file.
 
 ## Type
 
@@ -80,7 +92,7 @@ previous build had this backwards, declaring Devanagari a first-class
 script and then styling it everywhere as an accessory: smaller than the
 Latin, in secondary ink, at reduced opacity.
 
-116 of the 394 records carry no Devanagari title in the catalogue. Those
+116 of the 369 records carry no Devanagari title in the catalogue. Those
 lead with their Latin title in the voice face and drop the second line,
 rather than showing an empty heading — see `now__title:empty` in the
 stylesheet and the `t.d || t.t` fallbacks in `app.js`.
@@ -116,7 +128,7 @@ Nothing on this page lifts toward the cursor — the `translateY(-1px)`
 hover lift is the web's reflex, not a material one.
 
 A **label** only names a thing. It is a spine on a shelf of cassettes: set
-in signage caps and underscored, never boxed and never filled. The ten
+in signage caps and underscored, never boxed and never filled. The nine
 rooms are labels, the filters are labels.
 
 There are no pills anywhere. `border-radius:999px` on a hairline-bordered
@@ -137,8 +149,8 @@ Each record draws its own. The **video id seeds the geometry**:
 - stroke weights, phase offsets, and which way each ring turns
 
 The **room supplies the pigments** — turmeric, vermilion, saffron, gulal,
-jamun, indigo, peacock, neem, dhoop, surma — one triad per room, and no two
-rooms lead with the same colour.
+jamun, indigo, peacock, neem, dhoop — one triad per room, and no two rooms
+lead with the same colour.
 
 So the same song looks the same every time you play it, looks different
 from every other song, and changes colour when you carry it into another
@@ -150,33 +162,11 @@ signature before phase and colour are even counted.
 
 ## Rooms
 
-Ten, each with its own pigment triad and its own running order. Many songs
+Nine, each with its own pigment triad and its own running order. Many songs
 belong to six or seven rooms at once, so ordering by anything global would
 open every room with the same record. Each room instead sorts its own list
 by a hash of `(room id + video id)` — stable across reloads, different in
 every room.
-
-### Gym Playlist, the tenth room
-
-The other nine rooms are places, and the record is old in all of them. This
-one is a use, and the records are new: 25 Punjabi tracks from 2014–2022,
-Ninja and Sidhu Moose Wala and Karan Aujla, running 95 minutes.
-
-It came from a YouTube mix — `list=RDMkvy03tK4C8`, seeded off Ninja's
-*License*. A mix is generated per viewer and cannot be linked to at all: ask
-YouTube for that playlist and it answers *"this playlist type is
-unviewable."* So the mix was read once, flattened, and the video ids pinned
-into `catalog.js`. What is in the room now is what the mix served that day;
-it will not drift the way the live mix does.
-
-These 25 sit in **one room only**, unlike the rest of the catalogue, where a
-song commonly belongs to six or seven. They are twenty and thirty years
-younger than everything else here and would read as a mistake if they turned
-up in Saloon Classics.
-
-They also carry a mood of their own, `josh` — जोश, drive. The filter chips
-are built from whatever moods the catalogue actually contains, so it
-appeared in the index by itself.
 
 ### Powder and ink
 
@@ -188,23 +178,16 @@ point. `--pig-a-ink` is the same pigment darkened until it clears 4.5:1
 against the board — used for anything you have to *read*: the progress
 ring, the numerals, the focus outline, a live label, an engaged key.
 
-Without that split three of the ten pigments are effectively invisible on
+Without that split three of the nine pigments are effectively invisible on
 a light ground. Raw haldi is **1.45:1**, kesari 2.28 and dhoop 2.39, and
 two rooms lead with one of them: Auto Galli opened in turmeric with a
 progress ring you could not see. In ink, haldi is 4.59:1.
 
-The ink values in `rooms.js` are the worst case across all eleven grounds
-the page can paint — the bare board plus the ten room washes — because the
+The ink values in `rooms.js` are the worst case across all ten grounds the
+page can paint — the bare board plus the nine room washes — because the
 wash darkens the board slightly and takes a little contrast with it. If you
 change `BASE` in `app.js` or add a pigment, re-derive them; do not eyeball
 it.
-
-Surma, the tenth pigment, is the only one darker than the board, so its
-wash pulls the ground *down* rather than sideways. It was chosen light
-enough (`#dddcd7` once washed) to stay above the darkest ground already in
-play — jamun's `#dfdada` — which is why adding a tenth room changed none of
-the nine ratios that came before it. A darker surma would have forced a
-re-tune of all nine.
 
 ## Keyboard
 
@@ -216,7 +199,6 @@ re-tune of all nine.
 | `S` | shuffle |
 | `/` | open the index and search |
 | `1`–`9` | jump to a room |
-| `0` | jump to the tenth room, Gym Playlist |
 | `Esc` | close the index |
 
 ## Notes
@@ -234,11 +216,8 @@ re-tune of all nine.
   of it appears here. That credit was removed from the page at the client's
   request and lives here instead.
 
-  The Gym Playlist 25 came later and from a different place: the ids and
-  durations off the YouTube mix itself, and the song title, singer, film and
-  year off each video's own description block, which for these labels lists
-  them as credits. Every one of the 25 was checked to still resolve before
-  it went in.
+  The gym page's 298 Punjabi tracks came later and from a different place —
+  see **The gym page** below.
 - **The songs** belong to their composers, singers, lyricists and labels.
   Playback is handed to YouTube, which counts the play and pays the rights
   holder.
@@ -257,7 +236,7 @@ re-tune of all nine.
      sideways. `grid-template-columns:minmax(0,1fr)` pins it.
 - The design is committed to light. The board is `#e4e2dc` — a swept
   cement grey, not a warm cream. There is no dark mode; adding one means
-  re-tuning all ten pigments *and* all ten inks against a dark ground.
+  re-tuning all nine pigments *and* all nine inks against a dark ground.
   `html{color-scheme:light}` says so out loud, which stops a phone in dark
   mode force-darkening the range inputs, the search field and the
   scrollbar against a board that stays pale regardless.
@@ -265,9 +244,9 @@ re-tune of all nine.
   writes the current wash into `<meta name="theme-color">` as well as onto
   the body, so Chrome's address bar on Android and Safari's status and tab
   bars on iOS carry it — the room runs to the top and bottom edges of the
-  screen instead of stopping at the page. The ten washes are close but
+  screen instead of stopping at the page. The nine washes are close but
   distinct: Saloon is `#daded8`, Auto Galli `#e5e0d3`, Mistri Kaam
-  `#e4dbd5`, Gym Playlist `#dddcd7`.
+  `#e4dbd5`.
 
   This is why `wash()` returns hex rather than `rgb(r g b)`. The
   space-separated form is fine in CSS but is not parsed inside a
@@ -308,3 +287,165 @@ The `CNAME` file in the repo root already claims `puranidhun.in`, so Pages
 binds the domain as soon as the records resolve. Tick **Enforce HTTPS** in
 Settings → Pages once the certificate is issued (usually under an hour
 after DNS propagates).
+
+---
+
+# The gym page — ਲੋਹਾ / Loha
+
+`gym.html` is the other half of this repo and shares almost nothing with
+the first. Purani Dhun is a pale board, nine rooms of old Hindi records,
+and a rangoli that turns while the tape runs. Loha is a dark corridor,
+Punjabi only, and it hits you on the beat. It has its own stylesheet, its
+own catalogue and its own machine; the main site links to it from the end
+of the room rail and that is the whole of the connection.
+
+It is a separate page on purpose. The gym songs are twenty and thirty
+years younger than everything in the main catalogue, they are in a
+different language, and they wanted a room the pale board could not give
+them without ruining itself.
+
+## Two decks
+
+One page, two playlists, switched by the pair of plates under the wordmark.
+A track belongs to one deck or the other **by its release year** — there is
+no overlap and no judgement call:
+
+| Deck | Years | Tracks |
+| --- | --- | --- |
+| `Now` | 2019 onward | 114 |
+| `The Era` | 2005–2018 | 184 |
+
+`The Era` is the deck that was asked for by name: what was on repeat in
+gyms between 2005 and 2018. It is heaviest in 2011–2014 — the Honey Singh,
+Imran Khan, Bohemia and Panjabi MC years that actually played on gym
+speakers — and again in 2016–2018 with Mankirt Aulakh, early Sidhu Moose
+Wala, Ninja and Amrit Maan. Nobody keeps a record of what a gym played, so
+this is a curated list and not a census. Treat it as an argument rather
+than an archive, and send corrections.
+
+## Where the tracks came from
+
+Search and mix listings on YouTube, then hand-curation, then verification:
+
+- ~1,500 candidates harvested from artist and topic searches plus the
+  auto-generated mixes seeded off known tracks;
+- filtered to single songs on official label or artist channels — no
+  jukeboxes, mashups, bass-boosted re-uploads, slowed-and-reverb edits or
+  compilations;
+- picked by hand against a want-list, because "aggressive" is a judgement
+  no filter is going to make for you;
+- **every id fetched and confirmed to still resolve** before it went in.
+
+Two things worth knowing about the metadata. First, the same record often
+exists twice — the label's upload and the artist's own re-upload years
+later — so entries are collapsed on (title, first artist) and the earliest
+kept. Without that a 2013 song turns up in the `Now` deck wearing a 2025
+date. Second, for the pre-2013 records the YouTube upload date is *not* the
+release date, so those years are release years and are carried by hand.
+
+## The corridor
+
+`assets/js/corridor.js` is one WebGL fragment shader over a full-screen
+triangle. No geometry, no library, no build step, in keeping with the rest
+of the repo.
+
+It is **not a raymarch**. For a box tunnel the wall a ray hits can be
+solved outright —
+
+```
+t = min(halfWidth / |d.x|, halfHeight / |d.y|)
+```
+
+— so each pixel costs a division and a compare rather than forty steps of
+distance-field marching, which is why it holds 60fps on a phone. Everything
+after that is texturing the wall by `(z, across)`: corrugation, panel seams,
+ribs every four units, hazard chevrons low on both sides, strip lights along
+the roof, and their spill down the walls and bounce off the floor.
+
+Two details do most of the work:
+
+- **Near lamps are faded out** (`smoothstep(0.6, 4.5, p.z)`). Without it the
+  lamp directly overhead has a tiny `t`, blows the top of the screen into a
+  white sheet, and the tunnel stops reading as a tunnel at all.
+- **The leading edge of each rib is lit.** That one bright line is what
+  sells the forward motion; corrugation alone reads as static texture.
+
+If the context will not come up, the canvas is hidden and the CSS behind it
+— a lit concrete floor — stands in. The page works without WebGL.
+
+## On the beat, and the honest version of it
+
+**Nothing on this page is listening to the music.** The player is a
+cross-origin YouTube iframe: `createMediaElementSource()` needs same-origin
+media and there is no API for the spectrum, so a real analyser is not
+possible here, and anything claiming to be one would be lying to you.
+
+What it keeps instead is a **tempo clock**. Playback position is known to
+the frame, so given a tempo the beat is arithmetic:
+
+```
+phase = ((elapsed - phase0) * bpm / 60) % 1
+beat  = (1 - phase)^3        bar = every fourth beat, (1 - phase)^4
+```
+
+The default is 96 BPM, roughly where this music sits. The **Tap** key fixes
+it properly: tap four times and it sets the tempo *and* the phase from your
+taps, per track, remembered in `localStorage`. The readout turns from yellow
+to ice once a track's tempo has actually been set rather than assumed.
+
+`beat` and `bar` then drive everything — the corridor squeezing, the lens
+widening, the lamps going red on the downbeat, the shake, the chromatic
+split on the title, and `navigator.vibrate()` when Haptics is on.
+
+## What shakes, and what does not
+
+The room shakes. The type shakes, in the opposite direction and at 42% of
+the throw, which is what makes it read as the *room* moving rather than the
+page wobbling. **The controls do not move at all.**
+
+That last part was a bug first. The original build threw the whole shell
+around, and the giveaway was that a browser automating the page could not
+click the deck switch — "element is not stable", 96 times a minute. A key
+you have to chase is a broken key, and that goes double for anyone whose
+hands are not steady to begin with. So `#room` and `#type` take the hit and
+`#shell`, which holds everything you can touch, is bolted down.
+
+`Force` sets how hard all of it lands, from nothing to full, and is
+remembered between visits.
+
+## Reduced motion
+
+`prefers-reduced-motion: reduce` is not a suggestion on a page built out of
+strobing and shake — that is exactly the page a vestibular disorder cannot
+take. On reduce, Force is capped at 0.28, nothing is displaced at all, the
+chromatic split is off and the grain stops drifting. The corridor still
+lights on the beat, so the page still answers the music; it just stops
+throwing the room at you.
+
+## Keyboard
+
+| Key | Does |
+| --- | --- |
+| `Space` | play / pause |
+| `←` `→` | previous / next track |
+| `↑` `↓` | volume |
+| `S` | shuffle |
+| `T` | tap the tempo |
+| `1` `2` | Now deck / The Era deck |
+| `/` | open the rack and search |
+| `Esc` | close the rack |
+
+## Type
+
+Khand carries over from the main site — it is already the lettering of
+Indian shop boards, and set at 700 in caps at 8rem it is the right register
+for a page you read from the floor with a bar on your back. The voice face
+is **Tiro Gurmukhi** rather than Tiro Devanagari: these are Punjabi records
+and Gurmukhi is their script.
+
+Song titles are set in Latin, which is the opposite of the main site's
+rule. That is deliberate. This music is *marketed* in Latin — Speed Records
+and Geet MP3 print "Bambiha Bole" on the artwork, not ਬੰਬੀਹਾ ਬੋਲੇ — and
+transliterating several hundred titles by hand would have put a great deal
+of guesswork on the page. The wordmark says ਲੋਹਾ and means it; the track
+list follows the records.

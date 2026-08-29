@@ -1,6 +1,6 @@
 /*  PURANI DHUN — track catalogue
  *  ---------------------------------------------------------------
- *  394 records. Each entry is factual metadata only:
+ *  369 records. Each entry is factual metadata only:
  *    t  title (Latin)      d  title (Devanagari)   a  artist(s)
  *    al album / film       y  year                 s  length, seconds
  *    v  YouTube video id   r  rooms                m  moods
@@ -8,10 +8,6 @@
  *
  *  Playback is streamed from each track's official YouTube source
  *  through the IFrame Player API. No audio is hosted here.
- *
- *  369 of these are the old records the site is named for. The last 25
- *  are the Gym Playlist room and are not old at all — see the block at
- *  the foot of this file.
  *  ---------------------------------------------------------------  */
 
 window.CATALOG = [
@@ -383,41 +379,5 @@ window.CATALOG = [
   {"t":"Zindagi Ek Safar Hai Suhana","d":null,"a":"Kishore Kumar","al":null,"y":1971,"s":null,"v":"mzxHflxI-es","r":["bus-safar"],"m":["upbeat"],"l":"Hindi","dc":"1970s"},
   {"t":"Zindagi Har Kadam","d":"ज़िंदगी हर क़दम","a":"Nitin Mukesh","al":"Meri Jung","y":1985,"s":345,"v":"3DdAOVyym0o","r":["saloon-classics"],"m":["nostalgic"],"l":"Hindi","dc":"1980s"},
   {"t":"Zindagi Ki Na Toote Ladi","d":"ज़िंदगी की न टूटे लड़ी","a":"Lata Mangeshkar · Nitin Mukesh","al":"Kranti","y":1981,"s":423,"v":"5AfhgY_yj3o","r":["desh-bhakti"],"m":["patriotic"],"l":"Hindi","dc":"1980s"},
-  {"t":"Zoobi Zoobi","d":null,"a":"Alisha Chinoy","al":null,"y":1987,"s":null,"v":"HXbq49vLRC8","r":["auto-galli"],"m":["upbeat"],"l":"Hindi","dc":"1980s"},
-
-  /*  ── Gym Playlist ──────────────────────────────────────────────
-   *  A YouTube mix seeded off Ninja's "License", flattened to a fixed
-   *  running order. The mix itself is generated per viewer and cannot
-   *  be linked to — list=RD… playlists answer "this playlist type is
-   *  unviewable" — so the ids are pinned here instead.
-   *
-   *  These sit in one room only. They are twenty and thirty years
-   *  younger than everything above and would read as a mistake dropped
-   *  into Saloon Classics or 90s Dard.
-   *  ────────────────────────────────────────────────────────────── */
-  {"t":"License","d":"लाइसेंस","a":"Ninja","al":null,"y":2016,"s":229,"v":"Mkvy03tK4C8","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Hathyar","d":"हथियार","a":"Sidhu Moose Wala","al":"Sikander 2","y":2019,"s":188,"v":"Xod5R0BQLM8","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Jailaan","d":"जेलां","a":"Sidhu Moose Wala","al":"Moosa Jatt","y":2021,"s":197,"v":"oNY6SiLc0-Y","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2020s"},
-  {"t":"22 22","d":"२२ २२","a":"Gulab Sidhu · Sidhu Moose Wala","al":null,"y":2020,"s":289,"v":"_MqGhYihNr0","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Changa Mada Time","d":"चंगा माड़ा टाइम","a":"A Kay","al":null,"y":2016,"s":203,"v":"y6GA80jkmUM","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Thokda Reha","d":"ठोकड़ा रिहा","a":"Ninja","al":null,"y":2018,"s":215,"v":"74O53bWR6IY","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Gal Jattan Wali","d":"गल जट्टां वाली","a":"Ninja","al":null,"y":2015,"s":216,"v":"ORSJKRpoW10","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Adha Pind","d":"अधा पिंड","a":"Gurj Sidhu","al":null,"y":2018,"s":241,"v":"FhPdkmxQEjk","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Be Ready","d":"बी रेडी","a":"Ninja","al":null,"y":2021,"s":240,"v":"EIzYgQDloLg","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Mitran Da Naa","d":"मित्रां दा नां","a":"Ninja","al":null,"y":2020,"s":196,"v":"0xm_ZnBwZwM","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Shikaar","d":"शिकार","a":"Parry Sarpanch","al":null,"y":2018,"s":223,"v":"VWs4MHENovA","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Qatal","d":"क़त्ल","a":"Jordan Sandhu · Shree Brar","al":"Warning","y":2021,"s":179,"v":"dfjEf8qw8qM","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Sikander","d":"सिकंदर","a":"Karan Aujla","al":"Sikander 2","y":2019,"s":178,"v":"qo4KO1HXnJ8","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Challenge","d":"चैलेंज","a":"Ninja","al":null,"y":2018,"s":231,"v":"2byhW3BOKTU","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Bambiha Bole","d":"बंबीहा बोले","a":"Amrit Maan · Sidhu Moose Wala","al":null,"y":2020,"s":305,"v":"hpVNMjpjiJc","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Sanju","d":"संजू","a":"Sidhu Moose Wala","al":null,"y":2020,"s":252,"v":"2cLTT_bEqTg","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Gunday No. 1","d":"गुंडे नंबर १","a":"Dilpreet Dhillon","al":"Gunday No. 1","y":2014,"s":267,"v":"jTNKl_Ifkqc","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Dogar","d":"डोगर","a":"Sidhu Moose Wala","al":"Teri Meri Jodi","y":2019,"s":227,"v":"vZJVbbLzc3E","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Gundagardi","d":"गुंडागर्दी","a":"Himmat Sandhu","al":"Dakuaan Da Munda 2","y":2022,"s":200,"v":"htmuWEaFkPI","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Be Khauf Jatt","d":"बेख़ौफ़ जट्ट","a":"Veet Baljit","al":"Rupinder Gandhi 2: The Robinhood","y":2017,"s":121,"v":"kfnjxSaTfEs","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Poison","d":"पॉइज़न","a":"Sidhu Moose Wala · R-Nait","al":null,"y":2019,"s":272,"v":"rNhDtSnYZbo","r":["gym-playlist"],"m":["josh"],"l":"Punjabi","dc":"2010s"},
-  {"t":"El Jatt","d":"ऐल जट्ट","a":"Veer Sandhu · Varinder Brar","al":null,"y":2021,"s":284,"v":"LxBdXQ7Mqck","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2020s"},
-  {"t":"Tochan","d":"टोचन","a":"Sidhu Moose Wala · Byg Byrd","al":null,"y":2018,"s":271,"v":"y-PQiShdTKA","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Stubborn","d":"स्टबर्न","a":"Surjit Khan · Shar S","al":"Stubborn","y":2017,"s":241,"v":"V4XCiUt6sQc","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"},
-  {"t":"Kaali Camaro","d":"काली कमारो","a":"Amrit Maan · Deep Jandu","al":null,"y":2016,"s":256,"v":"XyCOJa5dcBE","r":["gym-playlist"],"m":["josh","upbeat"],"l":"Punjabi","dc":"2010s"}
+  {"t":"Zoobi Zoobi","d":null,"a":"Alisha Chinoy","al":null,"y":1987,"s":null,"v":"HXbq49vLRC8","r":["auto-galli"],"m":["upbeat"],"l":"Hindi","dc":"1980s"}
 ];

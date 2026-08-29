@@ -1,4 +1,4 @@
-/*  PURANI DHUN — the ten rooms
+/*  PURANI DHUN — the nine rooms
  *  ------------------------------------------------------------------
  *  A room is a palette and a sentence. Nothing else — no photographs,
  *  no scenery. What you see is the rangoli, and the rangoli takes its
@@ -6,8 +6,7 @@
  *
  *  Pigments are named for what they actually are: haldi is turmeric,
  *  sindoor is vermilion, gulal is the powder thrown at Holi, neem is
- *  leaf green, jamun is the fruit, kesari is saffron, surma is the
- *  slate blue-black of kohl.
+ *  leaf green, jamun is the fruit, kesari is saffron.
  *  ------------------------------------------------------------------ */
 
 (function () {
@@ -23,29 +22,22 @@
     dhoop:   '#0d9bc4',
     peacock: '#00887c',
     neem:    '#5c9128',
-    surma:   '#405a75',
   };
 
-  /*  The same ten pigments, darkened until each clears 4.5:1 against
+  /*  The same nine pigments, darkened until each clears 4.5:1 against
    *  the board (#e4e2dc). Raw powder is for the rangoli's own figure,
    *  where the shapes are large and saturation is the point. Anything
    *  you have to READ — the progress ring, a numeral, a live label —
    *  takes the ink instead.
    *
    *  This is not a nicety. Raw haldi on the board is 1.47:1, kesari
-   *  2.37 and dhoop 2.49, and two of the ten rooms (Auto Galli and
+   *  2.37 and dhoop 2.49, and two of the nine rooms (Auto Galli and
    *  Rickshaw Galli) lead with one of those. Their progress ring used
    *  to be all but invisible.
    */
-  /*  Ratios below are the WORST case across all eleven grounds the page
-   *  can paint — the bare board plus the ten room washes — because the
-   *  wash darkens the board slightly and eats a little contrast with it.
-   *
-   *  Surma is the one pigment darker than the board, so its wash is the
-   *  only one that pulls the ground down rather than sideways. It was
-   *  picked light enough (#dddcd7 washed) to sit above the darkest ground
-   *  already in play, jamun's #dfdada — otherwise a tenth room would have
-   *  forced a re-tune of all nine inks that came before it.
+  /*  Ratios below are the WORST case across all ten grounds the page can
+   *  paint — the bare board plus the nine room washes — because the wash
+   *  darkens the board slightly and eats a little contrast with it.
    */
   const PIGMENT_INK = {
     haldi:   '#7b5a0f',  /* 4.59:1 */
@@ -57,7 +49,6 @@
     dhoop:   '#096883',  /* 4.58:1 */
     peacock: '#006d63',  /* 4.52:1 */
     neem:    '#436a1d',  /* 4.58:1 */
-    surma:   '#405a75',  /* 5.17:1 — already clears it, left alone */
   };
 
   const room = (id, dial, name, deva, line, pigs) => ({
@@ -95,7 +86,7 @@
       'Window seat, dust on the glass, the driver picking the music for forty people.',
       ['neem', 'dhoop', 'haldi']),
 
-    // ten rooms, ten different pigments leading — no two rooms open the same colour
+    // nine rooms, nine different pigments leading — no two rooms open the same colour
     room('rickshaw-galli', 'Rickshaw', 'Rickshaw Galli', 'रिक्शा गली',
       'One speaker, three wheels, every pothole between here and the market.',
       ['dhoop', 'gulal', 'haldi']),
@@ -107,12 +98,5 @@
     room('mistri-kaam', 'Mistri', 'Mistri Kaam', 'मिस्त्री काम',
       'A paint-flecked radio on the workbench, switched on at seven and forgotten.',
       ['sindoor', 'indigo', 'kesari']),
-
-    /*  The tenth room is the odd one out and is meant to be: everywhere
-     *  else on this site the tape is old, and here it is not. It is the
-     *  one room that opens on iron rather than powder.  */
-    room('gym-playlist', 'Gym Playlist', 'Gym Playlist', 'जिम प्लेलिस्ट',
-      'A ceiling fan, a mirror gone milky, and forty kilos that will not move until the volume does.',
-      ['surma', 'sindoor', 'haldi']),
   ];
 })();

@@ -91,14 +91,14 @@
     if (themeMeta) themeMeta.setAttribute('content', ground);
     $('#now-room').textContent = room.name;
     $('#now-room-deva').textContent = room.deva;
-    $$('.room-btn').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));
+    $$('.room-btn[data-id]').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));
     railTo(id);
   }
 
   /*  Below 820px the rail stops wrapping and becomes a horizontal
       scroller wider than the screen, so the room you are standing in can
-      sit off either edge — Gym Playlist, last of the ten, is off the
-      right on a phone from the first paint. Walk it back to the middle.
+      sit off either edge — Mistri Kaam, last of the nine, is off the right
+      on a phone from the first paint. Walk it back to the middle.
       Measured off rects rather than offsetLeft: the buttons' offsetParent
       is the nav, not the scroller, and on narrow screens the two are
       pulled apart by the rail's negative margin. */
@@ -114,13 +114,22 @@
     });
   }
 
+  /*  Nine rooms, then the way out. Gym Playlist is not a tenth room and
+      never was: it is a different room in a different building — dark,
+      Punjabi, and loud — so it is a link to its own page rather than a
+      palette swap here. It rides the same rail because that is where you
+      would look for it. */
   function buildRoomNav() {
     $('#rooms-list').innerHTML = ROOMS.map(r => `
       <li><button class="room-btn" type="button" data-id="${r.id}" aria-current="false"
                   aria-label="${esc(r.name)}, ${inRoom(r.id).length} tapes">
         <span>${esc(r.dial)}</span><span class="room-btn__n">${inRoom(r.id).length}</span>
-      </button></li>`).join('');
-    $$('.room-btn').forEach(b => b.addEventListener('click', () => setRoom(b.dataset.id)));
+      </button></li>`).join('') + `
+      <li><a class="room-btn room-btn--out" href="gym.html"
+             aria-label="Gym Playlist — Punjabi, on its own page">
+        <span>Gym Playlist</span><span class="room-btn__out" aria-hidden="true">&#8599;</span>
+      </a></li>`;
+    $$('.room-btn[data-id]').forEach(b => b.addEventListener('click', () => setRoom(b.dataset.id)));
   }
 
   function setRoom(id) {
@@ -223,7 +232,7 @@
 
   function paintNowPlaying(t) {
     // The Devanagari is the title and the Latin beneath it is the
-    // transliteration — but 116 of the 394 records carry no Devanagari
+    // transliteration — but 116 of the 369 records carry no Devanagari
     // in the catalogue. Those lead with the Latin in the voice face and
     // drop the second line, rather than showing an empty heading.
     $('#now-deva').textContent   = t.d || t.t;
@@ -437,12 +446,7 @@
         case 'ArrowDown':  e.preventDefault(); setVolume(S.volume - 5); break;
         case 's': case 'S': $('#k-shuffle').click(); break;
         default:
-          // 1–9 walk the rail in order; 0 is the tenth room, where a
-          // keypad runs out of digits and starts over
-          if (/^[0-9]$/.test(e.key)) {
-            const r = ROOMS[e.key === '0' ? 9 : +e.key - 1];
-            if (r) setRoom(r.id);
-          }
+          if (/^[1-9]$/.test(e.key)) { const r = ROOMS[+e.key - 1]; if (r) setRoom(r.id); }
       }
     });
 

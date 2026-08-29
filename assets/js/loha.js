@@ -29,7 +29,35 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const DECKS = window.GYM || { now: [], era: [] };
+  /*  One flat catalogue; the decks are cuts of it, so a record lives in
+      exactly one place and can belong to two decks without being stored
+      twice. `now` and `era` split on year and never overlap. `badmashi`
+      is the other axis — a genre mark carried on the record itself — so
+      it crosses both and reaches back past where either one starts. */
+  const ALL = (window.GYM && window.GYM.tracks) || [];
+  const DECKS = {
+    now: ALL.filter(t => t.y && t.y >= 2019),
+    era: ALL.filter(t => t.y && t.y >= 2005 && t.y <= 2018),
+    badmashi: ALL.filter(t => t.b && (!t.y || t.y <= 2016)),
+  };
+  const DECK_IDS = ['now', 'era', 'badmashi'];
+  const CUE = {
+    now: 'Heavy rotation',
+    era: 'On repeat, 2005–18',
+    badmashi: 'Badmashi · ਬਦਮਾਸ਼ੀ',
+  };
+  const DECK_NAME = { now: 'Now', era: '2005–18', badmashi: 'Badmashi' };
+
+  /*  What the corridor is made of on each deck. Now is a working shed:
+      cold strip lights, hazard yellow. The Era is lit on tungsten, which
+      is what a room lit in 2011 actually looked like. Badmashi is the
+      same corridor after someone cut the white lights — red on rusted
+      steel, and it bites harder on the downbeat. */
+  const LOOK = {
+    now:      { accent: [1.00, 0.80, 0.02], lamp: [0.85, 0.90, 1.00], mood: 0.00 },
+    era:      { accent: [1.00, 0.60, 0.14], lamp: [1.00, 0.80, 0.52], mood: 0.38 },
+    badmashi: { accent: [1.00, 0.21, 0.15], lamp: [1.00, 0.28, 0.20], mood: 1.00 },
+  };
   const DEFAULT_BPM = 96;
 
   /* how hard the room is allowed to hit. Reduced motion does not get a
@@ -185,8 +213,10 @@
               (REDUCED ? 0 : S.kick * F * 0.035 * S.shakeX);
 
     if (gpu && !gpu.lost()) {
+      const look = LOOK[S.deck] || LOOK.now;
       gpu.draw({ time: now / 1000, dist: S.dist, beat: S.beat, bar: S.bar,
-                 force: F, roll: S.roll });
+                 force: F, roll: S.roll,
+                 accent: look.accent, lamp: look.lamp, mood: look.mood });
     }
 
     /*  The room takes the hit, and the type takes a smaller one. The
@@ -280,7 +310,7 @@
     $('#by').textContent    = t.a || '';
     $('#year').textContent  = t.y || '';
     $('#film').textContent  = t.al || '';
-    $('#cue').textContent   = S.deck === 'era' ? 'On repeat, 2005–18' : 'Heavy rotation';
+    $('#cue').textContent   = CUE[S.deck] || CUE.now;
     $('#src').href = 'https://www.youtube.com/watch?v=' + t.v;
     $('#n-now').textContent = String(S.i + 1).padStart(2, '0');
     document.title = t.t + ' — Loha';
@@ -337,7 +367,7 @@
     // the door is removed from the DOM once it has been opened, and this
     // runs again on every deck change — so it may well be gone by now
     const gn = $('#gate-n');
-    if (gn) gn.textContent = DECKS.now.length + DECKS.era.length;
+    if (gn) gn.textContent = ALL.length;
   }
 
   /* ═══ the rack ══════════════════════════════════════════════════ */
@@ -354,8 +384,7 @@
   function renderList() {
     const rows = filtered();
     $('#list-count').textContent =
-      rows.length + (rows.length === 1 ? ' track' : ' tracks') +
-      ' · ' + (S.deck === 'era' ? '2005–18' : 'Now');
+      rows.length + (rows.length === 1 ? ' track' : ' tracks') + ' · ' + DECK_NAME[S.deck];
     $('#none').hidden = rows.length > 0;
     $('#rows').innerHTML = rows.map((t, n) => `
       <li><button class="row" type="button" data-v="${esc(t.v)}" aria-current="false">
@@ -465,6 +494,7 @@
         case 't': case 'T': tap(); break;
         case '1': setDeck('now'); break;
         case '2': setDeck('era'); break;
+        case '3': setDeck('badmashi'); break;
       }
     });
 
@@ -486,7 +516,7 @@
 
   function boot() {
     const saved = store.read();
-    if (saved.deck === 'era' || saved.deck === 'now') S.deck = saved.deck;
+    if (DECK_IDS.indexOf(saved.deck) >= 0) S.deck = saved.deck;
     S.haptics = !!saved.haptics && !!navigator.vibrate;
 
     startCorridor();

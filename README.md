@@ -52,7 +52,7 @@ assets/img/og.png             link previews only; never fetched by the page
 
 gym.html                      Loha — the gym page, its own thing entirely
 assets/css/loha.css           dark, and shares no tokens with the board
-assets/js/gym-catalog.js      298 Punjabi tracks in two decks by year
+assets/js/gym-catalog.js      324 Punjabi tracks, one flat list
 assets/js/corridor.js         one WebGL shader: the tunnel
 assets/js/loha.js             queue, YouTube, tempo clock, shake
 ```
@@ -304,24 +304,41 @@ years younger than everything in the main catalogue, they are in a
 different language, and they wanted a room the pale board could not give
 them without ruining itself.
 
-## Two decks
+## Three decks
 
-One page, two playlists, switched by the pair of plates under the wordmark.
-A track belongs to one deck or the other **by its release year** — there is
-no overlap and no judgement call:
+One page, three playlists, switched by the row of plates under the wordmark.
+The catalogue is **one flat list of 324 records**; the decks are cuts of it,
+derived at load, so nothing is stored twice and nothing can fall between
+two of them.
 
-| Deck | Years | Tracks |
+| Deck | Cut | Tracks |
 | --- | --- | --- |
-| `Now` | 2019 onward | 114 |
-| `The Era` | 2005–2018 | 184 |
+| `Now` | `y >= 2019` | 113 |
+| `The Era` | `2005 <= y <= 2018` | 183 |
+| `Badmashi` | `b === 1` and (`y <= 2016` or undated) | 135 |
 
-`The Era` is the deck that was asked for by name: what was on repeat in
-gyms between 2005 and 2018. It is heaviest in 2011–2014 — the Honey Singh,
-Imran Khan, Bohemia and Panjabi MC years that actually played on gym
-speakers — and again in 2016–2018 with Mankirt Aulakh, early Sidhu Moose
-Wala, Ninja and Amrit Maan. Nobody keeps a record of what a gym played, so
-this is a curated list and not a census. Treat it as an argument rather
-than an archive, and send corrections.
+`Now` and `The Era` split on year and never overlap. **`Badmashi` is a
+different axis** — a genre mark carried on the record itself — so it
+crosses both and reaches back past where either one starts. A song can be
+in `The Era` and `Badmashi` at once, and about a hundred are.
+
+`The Era` is what was on repeat in gyms between 2005 and 2018. It is
+heaviest in 2011–2014 — the Honey Singh, Imran Khan, Bohemia and Panjabi MC
+years that actually played on gym speakers — and again in 2016–2018 with
+Mankirt Aulakh, early Sidhu Moose Wala, Ninja and Amrit Maan.
+
+`Badmashi` is the gangster and outlaw cut, from before 2000 up to 2016. It
+starts in the **kali** tradition — the outlaw ballads that are the original
+badmashi genre, Kuldeep Manak's *Jeona Morh* and *Sucha Soorma*, Chamkila's
+*Jatt Di Dushmani* — runs through Bindrakhia and the akhara sound of the
+90s, then Bohemia and Imran Khan in the 2000s, and lands on the 2011–2016
+jatt-and-weapon wave. Twenty of these carry **no year at all**: most of the
+kali repertoire circulated on cassette long before anyone catalogued it,
+and a blank is more honest than a guess.
+
+Nobody keeps a record of what a gym played, and no filter decides what
+counts as badmashi. Both of those decks are hand-picked judgements. Treat
+them as an argument rather than an archive, and send corrections.
 
 ## Where the tracks came from
 
@@ -334,14 +351,22 @@ Search and mix listings on YouTube, then hand-curation, then verification:
   compilations;
 - picked by hand against a want-list, because "aggressive" is a judgement
   no filter is going to make for you;
-- **every id fetched and confirmed to still resolve** before it went in.
+- **every id fetched and confirmed to still resolve** before it went in;
+- then **audited against each video's real title and channel**, which
+  caught seven entries a fuzzy search had got wrong — a truck-driver vlog
+  standing in for Sharry Mann's *Transporter*, a VDJ re-upload of *Mundian
+  To Bach Ke*, and a "Sarpanch by Varinder Brar" that was really *Sarpanchi*
+  by Raj Brar.
 
 Two things worth knowing about the metadata. First, the same record often
 exists twice — the label's upload and the artist's own re-upload years
-later — so entries are collapsed on (title, first artist) and the earliest
-kept. Without that a 2013 song turns up in the `Now` deck wearing a 2025
-date. Second, for the pre-2013 records the YouTube upload date is *not* the
-release date, so those years are release years and are carried by hand.
+later — so entries are collapsed by title and then confirmed with a fuzzy
+compare of the whole artist credit, keeping the earliest. ("Alfaaz Honey
+Singh" and "Alfaaz · Yo Yo Honey Singh" are one credit written two ways;
+*Sardari* by Kamal Grewal and *Sardari* by Sippy Gill are two different
+songs.) Without that a 2013 record turns up in the `Now` deck wearing a
+2025 date. Second, for the pre-2013 records the YouTube upload date is
+*not* the release date, so those years are release years, carried by hand.
 
 ## The corridor
 
@@ -394,8 +419,29 @@ taps, per track, remembered in `localStorage`. The readout turns from yellow
 to ice once a track's tempo has actually been set rather than assumed.
 
 `beat` and `bar` then drive everything — the corridor squeezing, the lens
-widening, the lamps going red on the downbeat, the shake, the chromatic
-split on the title, and `navigator.vibrate()` when Haptics is on.
+widening, the lamps flaring on the downbeat, the shake, the chromatic split
+on the title, and `navigator.vibrate()` when Haptics is on.
+
+## One corridor, three rooms
+
+Switching decks repaints the whole page, not just the list. The shader
+takes an accent colour, a lamp colour and a `mood` scalar, and the CSS
+swaps its accent token on `<html data-deck>`, so every chip, slider,
+underline and lit key follows the room:
+
+| Deck | Lamps | Paint | Room |
+| --- | --- | --- | --- |
+| `Now` | cold white | hazard yellow | a working shed |
+| `The Era` | tungsten | amber | how a room lit in 2011 actually looked |
+| `Badmashi` | red | red | the same corridor with the white lights cut |
+
+`mood` also warms the steel toward rust, deepens the haze, tightens the
+vignette and hardens the downbeat wash. The rib highlights take it too —
+without that, the nearest frame reads as a cold blue box hanging in the
+middle of a red corridor, which is exactly what the first version did.
+
+All three accents clear 4.5:1 on the void and carry black text when a key
+is pressed; the red is the tightest at 5.6:1.
 
 ## What shakes, and what does not
 
@@ -431,7 +477,7 @@ throwing the room at you.
 | `↑` `↓` | volume |
 | `S` | shuffle |
 | `T` | tap the tempo |
-| `1` `2` | Now deck / The Era deck |
+| `1` `2` `3` | Now / The Era / Badmashi |
 | `/` | open the rack and search |
 | `Esc` | close the rack |
 

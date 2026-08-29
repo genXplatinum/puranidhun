@@ -12,6 +12,13 @@
  *    bar     1 on the downbeat, decaying harder
  *    force   0..1, how much the room is allowed to react
  *    roll    camera roll, radians
+ *    accent  the hazard paint on the walls
+ *    lamp    what the strip lights are burning
+ *    mood    0 clean steel .. 1 rust and blood
+ *
+ *  The last three are what makes the corridor a different place on each
+ *  deck: cold white and hazard yellow for Now, tungsten and amber for
+ *  the Era, red on rusted steel for Badmashi.
  *  ------------------------------------------------------------------ */
 
 window.CORRIDOR = (function () {
@@ -24,7 +31,8 @@ window.CORRIDOR = (function () {
   const FRAG = `
   precision highp float;
   uniform vec2  uRes;
-  uniform float uTime, uDist, uBeat, uBar, uForce, uRoll;
+  uniform float uTime, uDist, uBeat, uBar, uForce, uRoll, uMood;
+  uniform vec3  uAccent, uLamp;
 
   mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
   float hash21(vec2 p){
@@ -56,7 +64,8 @@ window.CORRIDOR = (function () {
     float across = mix(p.x / hw, p.y / hh, sideWall);   /* -1 .. 1 */
 
     /* ── the steel itself ─────────────────────────────────────── */
-    vec3 col = vec3(0.052, 0.058, 0.070);
+    /* cold rolled steel, or the same steel gone rusty and warm */
+    vec3 col = mix(vec3(0.052, 0.058, 0.070), vec3(0.075, 0.050, 0.046), uMood);
     col *= 0.86 + 0.14 * sin(z * 12.566);                /* corrugation */
     col += 0.055 * smoothstep(0.05, 0.0, abs(fract(z * 0.5) - 0.5));
     col += 0.030 * smoothstep(0.02, 0.0, abs(fract(across * 2.5) - 0.5));
@@ -67,16 +76,20 @@ window.CORRIDOR = (function () {
     /* ── ribs: a frame every four units, lit on its leading edge ─ */
     float rf  = fract(z * 0.25);
     float rib = smoothstep(0.034, 0.0, rf) + smoothstep(0.966, 1.0, rf);
-    col = mix(col, vec3(0.145, 0.158, 0.182), rib);
-    /* a cold edge on the leading face of each rib — this is the detail
-       that actually sells the forward motion */
-    col += vec3(0.16, 0.18, 0.22) * smoothstep(0.012, 0.0, rf)
-                                  * smoothstep(1.0, 6.0, p.z);
+    col = mix(col, mix(vec3(0.145, 0.158, 0.182),
+                       vec3(0.150, 0.098, 0.090), uMood), rib);
+    /*  A lit edge on the leading face of each rib. This is the detail that
+        actually sells the forward motion — but it takes the room's own
+        temperature, or the near frame reads as a cold blue box hanging in
+        the middle of a red corridor. */
+    col += mix(vec3(0.16, 0.18, 0.22), vec3(0.24, 0.10, 0.08), uMood)
+                 * smoothstep(0.012, 0.0, rf)
+                 * smoothstep(1.0, 6.0, p.z);
 
     /* ── hazard chevrons, low on both side walls ────────────────── */
     float band = sideWall * smoothstep(0.085, 0.02, abs(across + 0.66));
     float chev = step(0.5, fract(z * 0.9 + 0.5));
-    vec3  haz  = mix(vec3(1.00, 0.80, 0.02), vec3(0.05, 0.045, 0.02), chev);
+    vec3  haz  = mix(uAccent, vec3(0.05, 0.045, 0.02), chev);
     col = mix(col, haz * (0.55 + 0.9 * uBeat * uForce), band);
 
     /* ── strip lights along the roof, every three units ──────────── */
@@ -89,7 +102,7 @@ window.CORRIDOR = (function () {
     float lf   = abs(fract(z / 3.0) - 0.5);
     float lamp = roof * smoothstep(0.075, 0.0, lf)
                       * smoothstep(0.60, 0.14, abs(across)) * ahead;
-    vec3 lampC = mix(vec3(0.85, 0.90, 1.00), vec3(1.00, 0.17, 0.10), uBar * uForce);
+    vec3 lampC = mix(uLamp, vec3(1.00, 0.17, 0.10), uBar * uForce);
     col += lampC * lamp * (1.7 + 2.8 * uBeat * uForce);
 
     /* their spill down the walls, and the wet bounce off the floor */
@@ -99,14 +112,16 @@ window.CORRIDOR = (function () {
     col += lampC * floorY * smoothstep(0.30, 0.0, lf) * 0.5 * ahead
                  * (0.5 + 0.5 * uBeat * uForce);
 
-    /* ── the red wash on the downbeat ───────────────────────────── */
-    col += vec3(0.55, 0.045, 0.03) * uBar * uForce
+    /* ── the wash on the downbeat ───────────────────────────────── */
+    col += mix(vec3(0.55, 0.045, 0.03), vec3(0.85, 0.030, 0.020), uMood)
+                 * uBar * uForce * (0.85 + 0.5 * uMood)
                  * smoothstep(1.1, 0.0, length(uv));
 
     /* ── depth ──────────────────────────────────────────────────── */
     float fog = exp(-t * 0.145);
     col *= fog;
-    col += vec3(0.020, 0.024, 0.034) * (1.0 - fog);      /* haze */
+    col += mix(vec3(0.020, 0.024, 0.034), vec3(0.040, 0.014, 0.012), uMood)
+                 * (1.0 - fog);                          /* haze */
 
     /* dust caught in the lamps */
     float m = hash21(floor(vec2(uv.x * 190.0, uv.y * 190.0 - uTime * 24.0)));
@@ -114,7 +129,7 @@ window.CORRIDOR = (function () {
 
     /* ── grade ──────────────────────────────────────────────────── */
     col = pow(max(col, 0.0), vec3(0.88));
-    col *= 1.0 - 0.55 * dot(uv, uv);                     /* vignette */
+    col *= 1.0 - (0.55 + 0.22 * uMood) * dot(uv, uv);    /* vignette */
     col = mix(col, vec3(dot(col, vec3(0.299, 0.587, 0.114))), -0.12);
 
     gl_FragColor = vec4(col, 1.0);
@@ -161,7 +176,7 @@ window.CORRIDOR = (function () {
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
       const U = {};
-      ['uRes','uTime','uDist','uBeat','uBar','uForce','uRoll']
+      ['uRes','uTime','uDist','uBeat','uBar','uForce','uRoll','uMood','uAccent','uLamp']
         .forEach(n => { U[n] = gl.getUniformLocation(pr, n); });
 
       let w = 0, h = 0;
@@ -189,6 +204,9 @@ window.CORRIDOR = (function () {
           gl.uniform1f(U.uBar,   s.bar);
           gl.uniform1f(U.uForce, s.force);
           gl.uniform1f(U.uRoll,  s.roll);
+          gl.uniform1f(U.uMood,  s.mood);
+          gl.uniform3fv(U.uAccent, s.accent);
+          gl.uniform3fv(U.uLamp,   s.lamp);
           gl.drawArrays(gl.TRIANGLES, 0, 3);
         },
       };

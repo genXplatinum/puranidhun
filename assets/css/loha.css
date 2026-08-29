@@ -450,9 +450,35 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   .title{text-shadow:none}
 }
 
-/* ── 13  the two decks ──────────────────────────────────────────── */
-/*  One page, two playlists. The switch is a pair of plates bolted to
-    the wall, not a tab strip — the live one is painted hazard. */
+/* ── 13  the three decks ────────────────────────────────────────── */
+/*  One page, three playlists. The switch is a row of plates bolted to
+    the wall, not a tab strip — the live one is painted in whatever the
+    room is lit with.
+
+    Each deck repaints the whole page, not just the corridor: the accent
+    token is swapped on <html data-deck>, so every chip, slider, underline
+    and lit key follows the room. Now is hazard yellow, the Era is
+    tungsten amber, Badmashi is red.
+
+    All three clear 4.5:1 on the void (#08090b) and carry black text when
+    a key is pressed down — 5.6:1 for the red, which is the tightest. */
+:root[data-deck="era"]{
+  --haz:#ff9c24;
+  --haz-deep:#c26f10;
+}
+:root[data-deck="badmashi"]{
+  --haz:#ff3b2d;
+  --haz-deep:#b3211a;
+  --ice:#ff9d94;
+}
+/*  Badmashi is the one deck that is not lit from above. The vignette
+    closes in and the ground goes to almost nothing, so the corridor is
+    doing the talking and the type sits in what is left. */
+:root[data-deck="badmashi"] #vig{
+  background:
+    radial-gradient(ellipse 62% 48% at 50% 46%, rgba(0,0,0,.80) 0%, rgba(0,0,0,.38) 45%, transparent 74%),
+    linear-gradient(rgba(0,0,0,.86), transparent 24%, transparent 60%, rgba(0,0,0,.92));
+}
 #decks{
   flex:none;display:flex;justify-content:center;gap:.4rem;
   margin-top:.2rem;

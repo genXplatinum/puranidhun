@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════
    PURANI DHUN
-   Nine rooms, 369 records, one rangoli per song.
+   Ten rooms, 394 records, one rangoli per song.
    ─────────────────────────────────────────────────────────────────
    Two typefaces, and both of them set Devanagari and Latin from one
    hand, so the two scripts are siblings rather than neighbours:
@@ -251,7 +251,7 @@ button,input{font:inherit;color:inherit}
 #stage{
   flex:1;min-height:0;
   display:grid;
-  /* minmax(0,1fr), not auto: the nine-label rail is wider than the
+  /* minmax(0,1fr), not auto: the ten-label rail is wider than the
      screen and an auto column would stretch to it and push the page
      sideways */
   grid-template-columns:minmax(0,1fr);
@@ -338,7 +338,8 @@ body:not([data-playing]) .rg-ring{animation-play-state:paused}
 }
 
 /* ── 7  rooms ───────────────────────────────────────────────────── */
-/* nine spines on a shelf */
+/* ten spines on a shelf. Nine of them are one word; Gym Playlist is
+   two, and is the newest room rather than a mis-set label. */
 #rooms{grid-area:rooms;align-self:start;max-width:100%;min-width:0}
 #rooms-list{
   display:flex;flex-wrap:wrap;gap:.15rem 1.15rem;justify-content:center;
@@ -346,6 +347,9 @@ body:not([data-playing]) .rg-ring{animation-play-state:paused}
 }
 .room-btn{
   flex:0 0 auto;
+  /* Gym Playlist is the one two-word label on the rail; it must ride on a
+     single underline like the other nine rather than break in half */
+  white-space:nowrap;
   border:0;background:none;cursor:pointer;
   padding:.42rem .1rem .34rem;
   font-family:var(--sign);font-weight:600;font-size:.92rem;

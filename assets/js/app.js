@@ -92,6 +92,26 @@
     $('#now-room').textContent = room.name;
     $('#now-room-deva').textContent = room.deva;
     $$('.room-btn').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));
+    railTo(id);
+  }
+
+  /*  Below 820px the rail stops wrapping and becomes a horizontal
+      scroller wider than the screen, so the room you are standing in can
+      sit off either edge — Gym Playlist, last of the ten, is off the
+      right on a phone from the first paint. Walk it back to the middle.
+      Measured off rects rather than offsetLeft: the buttons' offsetParent
+      is the nav, not the scroller, and on narrow screens the two are
+      pulled apart by the rail's negative margin. */
+  function railTo(id) {
+    const rail = $('#rooms-list');
+    const cur  = $(`.room-btn[data-id="${id}"]`);
+    if (!rail || !cur || rail.scrollWidth <= rail.clientWidth) return;
+    const r = rail.getBoundingClientRect();
+    const c = cur.getBoundingClientRect();
+    rail.scrollTo({
+      left: rail.scrollLeft + (c.left + c.width / 2) - (r.left + r.width / 2),
+      behavior: REDUCED ? 'auto' : 'smooth',
+    });
   }
 
   function buildRoomNav() {
@@ -203,7 +223,7 @@
 
   function paintNowPlaying(t) {
     // The Devanagari is the title and the Latin beneath it is the
-    // transliteration — but 116 of the 369 records carry no Devanagari
+    // transliteration — but 116 of the 394 records carry no Devanagari
     // in the catalogue. Those lead with the Latin in the voice face and
     // drop the second line, rather than showing an empty heading.
     $('#now-deva').textContent   = t.d || t.t;
@@ -417,7 +437,12 @@
         case 'ArrowDown':  e.preventDefault(); setVolume(S.volume - 5); break;
         case 's': case 'S': $('#k-shuffle').click(); break;
         default:
-          if (/^[1-9]$/.test(e.key)) { const r = ROOMS[+e.key - 1]; if (r) setRoom(r.id); }
+          // 1–9 walk the rail in order; 0 is the tenth room, where a
+          // keypad runs out of digits and starts over
+          if (/^[0-9]$/.test(e.key)) {
+            const r = ROOMS[e.key === '0' ? 9 : +e.key - 1];
+            if (r) setRoom(r.id);
+          }
       }
     });
 

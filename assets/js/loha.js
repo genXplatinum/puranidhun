@@ -38,7 +38,7 @@
   const DECKS = {
     now: ALL.filter(t => t.y && t.y >= 2019),
     era: ALL.filter(t => t.y && t.y >= 2005 && t.y <= 2018),
-    badmashi: ALL.filter(t => t.b && (!t.y || t.y <= 2016)),
+    badmashi: ALL.filter(t => t.b && t.y >= 2000 && t.y <= 2016),
   };
   const DECK_IDS = ['now', 'era', 'badmashi'];
   const CUE = {
@@ -46,7 +46,7 @@
     era: 'On repeat, 2005–18',
     badmashi: 'Badmashi · ਬਦਮਾਸ਼ੀ',
   };
-  const DECK_NAME = { now: 'Now', era: '2005–18', badmashi: 'Badmashi' };
+  const DECK_NAME = { now: 'Now', era: '2005–18', badmashi: 'Badmashi 2000–16' };
 
   /*  What the corridor is made of on each deck. Now is a working shed:
       cold strip lights, hazard yellow. The Era is lit on tungsten, which

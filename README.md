@@ -52,7 +52,7 @@ assets/img/og.png             link previews only; never fetched by the page
 
 gym.html                      Loha — the gym page, its own thing entirely
 assets/css/loha.css           dark, and shares no tokens with the board
-assets/js/gym-catalog.js      324 Punjabi tracks, one flat list
+assets/js/gym-catalog.js      387 Punjabi tracks, one flat list
 assets/js/corridor.js         one WebGL shader: the tunnel
 assets/js/loha.js             queue, YouTube, tempo clock, shake
 ```
@@ -307,15 +307,15 @@ them without ruining itself.
 ## Three decks
 
 One page, three playlists, switched by the row of plates under the wordmark.
-The catalogue is **one flat list of 324 records**; the decks are cuts of it,
+The catalogue is **one flat list of 387 records**; the decks are cuts of it,
 derived at load, so nothing is stored twice and nothing can fall between
 two of them.
 
 | Deck | Cut | Tracks |
 | --- | --- | --- |
-| `Now` | `y >= 2019` | 113 |
-| `The Era` | `2005 <= y <= 2018` | 183 |
-| `Badmashi` | `b === 1` and (`y <= 2016` or undated) | 135 |
+| `Now` | `y >= 2019` | 112 |
+| `The Era` | `2005 <= y <= 2018` | 273 |
+| `Badmashi` | `b === 1` and `2000 <= y <= 2016` | 239 |
 
 `Now` and `The Era` split on year and never overlap. **`Badmashi` is a
 different axis** — a genre mark carried on the record itself — so it
@@ -327,18 +327,28 @@ heaviest in 2011–2014 — the Honey Singh, Imran Khan, Bohemia and Panjabi MC
 years that actually played on gym speakers — and again in 2016–2018 with
 Mankirt Aulakh, early Sidhu Moose Wala, Ninja and Amrit Maan.
 
-`Badmashi` is the gangster and outlaw cut, from before 2000 up to 2016. It
-starts in the **kali** tradition — the outlaw ballads that are the original
-badmashi genre, Kuldeep Manak's *Jeona Morh* and *Sucha Soorma*, Chamkila's
-*Jatt Di Dushmani* — runs through Bindrakhia and the akhara sound of the
-90s, then Bohemia and Imran Khan in the 2000s, and lands on the 2011–2016
-jatt-and-weapon wave. Twenty of these carry **no year at all**: most of the
-kali repertoire circulated on cassette long before anyone catalogued it,
-and a blank is more honest than a guess.
+`Badmashi` is the gangster and outlaw cut, **2000 to 2016**. Bohemia and
+Imran Khan through the 2000s, the Mafia Mundeer years, and then the long
+2011–2016 jatt-and-weapon wave that is the bulk of it — *Gandasa*,
+*Badmashi*, *Asla*, *Goli*, *Vaardat*, *Rohb*, *Daang Kharku*, *Gunday
+Returns*, *Att De Shikaari*, *Sher Marna*, *Gangland*, *Kabza*.
 
 Nobody keeps a record of what a gym played, and no filter decides what
 counts as badmashi. Both of those decks are hand-picked judgements. Treat
 them as an argument rather than an archive, and send corrections.
+
+## What is not in here
+
+This is a gym playlist. The test for a record is whether it raises your
+heart rate under a bar — **not whether it is a good song**. Romance,
+heartbreak, wedding pop and club filler are out, however big they were.
+*Bewafa*, *Love Dose*, *High Heels*, *Patola*, *Lahore*, *Hath Chumme*,
+*Cute Munda*, *Raat Di Gedi*, *Thokda Reha* — all pulled, along with 68
+others, for exactly that reason.
+
+That cut is a judgement and it is written down as one: `purge` in the build
+scripts, and the rule at the top of `gym-catalog.js`. If you add to the
+file, that is the bar to clear.
 
 ## Where the tracks came from
 

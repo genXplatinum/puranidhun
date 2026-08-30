@@ -3,25 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Loha — Gym Playlist | Purani Dhun</title>
-<meta name="description" content="Punjabi gym playlist. Sidhu Moose Wala, Karan Aujla, Ninja, Varinder Brar — heavy Punjabi records in an iron corridor that moves with the beat.">
+<title>Max — Worldwide Gym Playlist | Purani Dhun</title>
+<meta name="description" content="202 records gyms play everywhere — rock, metal, hip-hop, phonk and anthems, in any language — in an iron corridor that moves with the beat.">
 <meta name="theme-color" content="#08090b">
-<link rel="canonical" href="https://puranidhun.in/gym.html">
+<link rel="canonical" href="https://puranidhun.in/max.html">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://puranidhun.in/gym.html">
+<meta property="og:url" content="https://puranidhun.in/max.html">
 <meta property="og:site_name" content="Purani Dhun">
-<meta property="og:title" content="LOHA — ਲੋਹਾ · the gym playlist">
-<meta property="og:description" content="The other nine rooms are for remembering. This one is for lifting. Heavy Punjabi records, in an iron corridor that moves with the beat.">
+<meta property="og:title" content="MAX — the worldwide gym playlist">
+<meta property="og:description" content="No language filter. 202 records that gyms play everywhere, from Master of Puppets to Malhari, in a corridor that moves with the beat.">
 <meta property="og:image" content="https://puranidhun.in/assets/img/og.png?v=2">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="LOHA — ਲੋਹਾ · the gym playlist">
-<meta name="twitter:description" content="The other nine rooms are for remembering. This one is for lifting.">
+<meta name="twitter:title" content="MAX — the worldwide gym playlist">
+<meta name="twitter:description" content="No language filter. 202 records that gyms play everywhere.">
 <meta name="twitter:image" content="https://puranidhun.in/assets/img/og.png?v=2">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Khand is the machine, same as the main site. Tiro Gurmukhi is the
-     voice here rather than Tiro Devanagari: these are Punjabi records. -->
+<!-- Khand only. The gym room carries a Gurmukhi wordmark because those are
+     Punjabi records; this room has no one language to speak for, so it does
+     not pretend to have one. -->
 <link href="https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&family=Tiro+Gurmukhi&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/loha.css">
 </head>
@@ -41,34 +42,32 @@
 <div id="grain" aria-hidden="true"></div>
 
 <!-- The room shakes and the type shakes. The CONTROLS DO NOT: a key you
-     have to chase around the screen is a broken key, and that goes double
-     for anyone whose hands are not steady to begin with. -->
+     have to chase around the screen is a broken key. -->
 <div id="shell">
 
   <header id="top">
-    <a class="back" href="/">&larr; <span>Purani Dhun</span></a>
+    <a class="back" href="gym.html">&larr; <span>ਲੋਹਾ Loha</span></a>
     <p class="mark">
-      <b class="mark__gur">ਲੋਹਾ</b>
-      <span class="mark__lat">Loha &middot; Gym Playlist</span>
+      <b class="mark__lat mark__lat--solo">MAX</b>
+      <span class="mark__lat">Worldwide</span>
     </p>
     <p class="stat"><span id="n-now">--</span><i>/</i><span id="n-all">--</span></p>
   </header>
 
-  <!-- Four decks. One page, one corridor, and the corridor is a different
-       room in each: hazard yellow, tungsten, red on rust, and — for Dance
-       — the same corridor with a lighting rig patched into it. -->
+  <!-- Four decks, cut on what a record is rather than when it came out —
+       this catalogue runs 1970 to 2022, so a year cut would say nothing. -->
   <nav id="decks" aria-label="Playlists">
-    <button class="deck-btn" type="button" data-deck="now" aria-pressed="true">
-      <b>Now</b><span>2019 &rarr;</span>
+    <button class="deck-btn" type="button" data-deck="iron" aria-pressed="true">
+      <b>Iron</b><span>Rock &amp; metal</span>
     </button>
-    <button class="deck-btn" type="button" data-deck="era" aria-pressed="false">
-      <b>The Era</b><span>2005&ndash;18</span>
+    <button class="deck-btn" type="button" data-deck="rap" aria-pressed="false">
+      <b>Rap</b><span>Hip-hop</span>
     </button>
-    <button class="deck-btn" type="button" data-deck="badmashi" aria-pressed="false">
-      <b>Badmashi</b><span>2000&ndash;16</span>
+    <button class="deck-btn" type="button" data-deck="volt" aria-pressed="false">
+      <b>Volt</b><span>Electronic</span>
     </button>
-    <button class="deck-btn" type="button" data-deck="dance" aria-pressed="false">
-      <b>Dance</b><span>2000&ndash;26</span>
+    <button class="deck-btn" type="button" data-deck="rise" aria-pressed="false">
+      <b>Rise</b><span>Anthems</span>
     </button>
   </nav>
 
@@ -121,7 +120,6 @@
       </label>
       <button id="k-haptic" class="chip" type="button" aria-pressed="false">Haptics</button>
       <a id="src" class="chip" href="#" target="_blank" rel="noopener">Source</a>
-      <a class="chip chip--go" href="max.html">Worldwide &rarr;</a>
       <button id="k-list" class="chip chip--n" type="button" aria-expanded="false" aria-controls="list">
         <b id="list-n">0</b> tracks
       </button>
@@ -133,12 +131,12 @@
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-h">
   <div class="gate__in">
     <p class="gate__kick">Purani Dhun</p>
-    <h2 id="gate-h" class="gate__mark"><b>ਲੋਹਾ</b><span>Loha</span></h2>
-    <p class="gate__line">The other nine rooms are for remembering.
-      This one is for lifting.</p>
+    <h2 id="gate-h" class="gate__mark gate__mark--solo"><b>MAX</b></h2>
+    <p class="gate__line">The other room is Punjabi.
+      This one has no language at all.</p>
     <button id="gate-go" type="button" class="gate__key">Load the bar</button>
-    <p class="gate__fine"><span id="gate-n">0</span> Punjabi records &middot;
-      four decks &middot; heavy or dancing</p>
+    <p class="gate__fine"><span id="gate-n">0</span> records &middot;
+      four decks &middot; 1970 to now</p>
   </div>
 </div>
 
@@ -153,8 +151,8 @@
   <p class="list__none" id="none" hidden>Nothing under that name.</p>
 </aside>
 
-<script src="assets/js/gym-catalog.js"></script>
-<script src="assets/js/deck-gym.js"></script>
+<script src="assets/js/max-catalog.js"></script>
+<script src="assets/js/deck-max.js"></script>
 <script src="assets/js/corridor.js"></script>
 <script src="assets/js/loha.js"></script>
 </body>

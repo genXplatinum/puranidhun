@@ -51,10 +51,14 @@ assets/js/rooms.js            nine rooms: three pigments and a sentence each
 assets/js/rangoli.js          the generative engine
 assets/js/app.js              queue, YouTube, tempo clock, rooms, index
 
-gym.html                      Loha — the gym playlist, four decks
-assets/css/loha.css           (see above; the gym page adds nothing)
+gym.html                      Loha — the Punjabi gym playlist, four decks
+max.html                      Max — the worldwide gym playlist, four decks
+assets/css/loha.css           (see above; neither gym page adds anything)
+assets/js/loha.js             THE ENGINE. Both gym pages run it.
 assets/js/gym-catalog.js      499 Punjabi tracks, one flat list
-assets/js/loha.js             queue, YouTube, tempo clock, decks
+assets/js/max-catalog.js      202 worldwide tracks, one flat list
+assets/js/deck-gym.js         gym.html's decks, cuts and colours
+assets/js/deck-max.js         max.html's decks, cuts and colours
 
 assets/img/favicon.svg        the only image either page loads
 assets/img/og.png             link previews only; never fetched by a page
@@ -62,6 +66,13 @@ assets/img/og.png             link previews only; never fetched by a page
 
 No build step, no dependencies, no photographs. The only bitmap anywhere
 is the link-preview card.
+
+**Three pages, two machines.** `app.js` drives the main page, because rooms
+and a rangoli are genuinely a different thing. `loha.js` drives *both* gym
+pages: same corridor, same beat clock, same controls, and the only
+differences — which catalogue, how the decks cut, what colour the light is
+— arrive as a config object the page sets before the engine loads. Adding
+the worldwide room did not fork the player; it added a 45-line config file.
 
 **Two pages, one design.** They used to be opposites — a pale cement board
 here, a dark corridor there — and that was a decision, until it wasn't.
@@ -72,14 +83,15 @@ does not.
 
 What each page keeps is what makes it itself:
 
-| | `index.html` | `gym.html` |
-| --- | --- | --- |
-| centre of the screen | a rangoli, one per song | the corridor, uninterrupted |
-| the cut | nine **rooms** | four **decks** |
-| the voice face | Tiro Devanagari Hindi | Tiro Gurmukhi |
-| titles set in | Devanagari, Latin beneath | Latin |
-| accent colour | the room's lead pigment | the deck's |
-| default tempo | 84 BPM | 96 BPM |
+| | `index.html` | `gym.html` | `max.html` |
+| --- | --- | --- | --- |
+| centre of the screen | a rangoli, one per song | the corridor, uninterrupted | the corridor, uninterrupted |
+| the cut | nine **rooms** | four **decks**, by year and mark | four **decks**, by genre |
+| the wordmark | पुरानी धुन | ਲੋਹਾ | MAX |
+| the voice face | Tiro Devanagari Hindi | Tiro Gurmukhi | none — no one language |
+| titles set in | Devanagari, Latin beneath | Latin | Latin |
+| accent colour | the room's lead pigment | the deck's, warm half | the deck's, cold half |
+| default tempo | 84 BPM | 96 BPM | 120 BPM |
 
 The two title rules are opposite on purpose. A Hindi cassette inlay printed
 the Devanagari as the title and the Latin under it as the transliteration,
@@ -166,7 +178,7 @@ Both pages share the transport; only the last row differs.
 | `/` | open the rack and search |
 | `Esc` | close the rack |
 | `1`–`9` | walk into a room *(index.html)* |
-| `1`–`4` | Now / The Era / Badmashi / Dance *(gym.html)* |
+| `1`–`4` | the decks, in plate order *(gym.html, max.html)* |
 
 ## Notes
 
@@ -433,7 +445,7 @@ vignette and hardens the downbeat wash. The rib highlights take it too —
 without that, the nearest frame reads as a cold blue box hanging in the
 middle of a red corridor, which is exactly what the first version did.
 
-All three accents clear 4.5:1 on the void and carry black text when a key
+All four accents clear 4.5:1 on the void and carry black text when a key
 is pressed; the red is the tightest at 5.6:1.
 
 ## What shakes, and what does not
@@ -470,7 +482,7 @@ throwing the room at you.
 | `↑` `↓` | volume |
 | `S` | shuffle |
 | `T` | tap the tempo |
-| `1` `2` `3` `4` | Now / The Era / Badmashi / Dance |
+| `1` `2` `3` `4` | the decks, in plate order |
 | `/` | open the rack and search |
 | `Esc` | close the rack |
 
@@ -488,3 +500,120 @@ and Geet MP3 print "Bambiha Bole" on the artwork, not ਬੰਬੀਹਾ ਬੋ�
 transliterating several hundred titles by hand would have put a great deal
 of guesswork on the page. The wordmark says ਲੋਹਾ and means it; the track
 list follows the records.
+
+
+---
+
+# The worldwide page — MAX
+
+`max.html` is the third room. Same corridor, same machine, no language
+filter: **202 records that gyms play everywhere**, from *Master of Puppets*
+to *Malhari*. The name is the one-rep max, and it is the only wordmark on
+the site set in Latin alone — the other two speak a language, and this one
+deliberately does not.
+
+## It is the same player
+
+Adding this page did not fork anything. `loha.js` became an engine that
+reads `window.LOHA_CONF`, and both gym pages set one:
+
+```js
+window.LOHA_CONF = {
+  store: 'max:v1',        // its own localStorage namespace
+  title: 'Max',
+  bpm: 120,               // the gym room assumes 96
+  tracks: () => window.MAX.tracks,
+  decks: [ { id, name, cue, pick(track), look{accent,lamp,mood,party} }, … ],
+};
+```
+
+`pick` is a predicate over one record, so a deck can be a year range, a
+genre mark or both. That is the whole seam. `deck-max.js` is 45 lines and
+the engine is unchanged between the two rooms.
+
+## Four decks, cut on genre rather than year
+
+The gym room cuts on years because Punjabi gym music has a before and an
+after. This catalogue runs **1970 to 2022**, so a year cut would say
+nothing at all. These cut on what a record *is*:
+
+| Deck | What | Records | Room |
+| --- | --- | --- | --- |
+| `Iron` | rock and metal | 84 | chalk on concrete, bare fluorescent, no colour |
+| `Rap` | hip-hop | 43 | the lights cut to violet, the steel warms behind |
+| `Volt` | electronic and phonk | 35 | the lighting rig, same as Dance |
+| `Rise` | anthems, and film songs that work like them | 40 | safety green |
+
+The gym room owns the warm half of the wheel — hazard yellow, tungsten
+amber, red, rani pink — so this one takes the cold half plus one acid
+green, and the two pages cannot be confused at a glance. `#e9eff6` at
+17.2:1, `#a17bff` at 6.4:1, `#22e0ff` at 12.5:1, `#a6ff3d` at 16.1:1, all
+on the void, all carrying black text when a key is pressed.
+
+Iron is deliberately achromatic. A bare tube over concrete has no colour,
+and against four coloured rooms the *absence* reads as its own thing.
+
+## Where the tracks came from
+
+A hand-written want-list of the global gym canon, then resolved against
+YouTube and filtered hard. Three things are worth knowing about it.
+
+**The channel had to be the artist's, a Vevo, or a real label.** The first
+pass took whatever matched the title and handed back a pile of re-uploader
+channels — `432hz Trap`, `Enjoy it`, `4000 CUTS`. Re-uploads get struck,
+and they are the ones most likely to refuse an embed. So channel authority
+outranks title similarity, and the test is strict: fold the channel name,
+strip only the affixes a genuine artist channel wears (`VEVO`, `Official`,
+`Music`, `Records`, `Band`, `TV`), and require an exact match. A looser
+version of that test passed `MetallicaFanHD` for Metallica, `EminemExplicit`
+for Eminem and `2Pac Radio & Remixes` for 2Pac. Every id in the file was
+then confirmed live through oEmbed.
+
+**Years are curated by hand, not scraped.** YouTube only knows when a file
+was *uploaded*. It dates *Master of Puppets* to 2022 and *Immigrant Song* to
+2020, because that is when the labels refreshed their channels. For a
+catalogue spanning fifty years that is not a small error, it is useless, so
+every year in `max-catalog.js` is the year the record came out.
+
+**Phonk is in here on purpose.** A worldwide gym list written in 2026
+without INTERWORLD, Kordhell, DVRST, MoonDeity or Hensonn would be a list
+of what gyms played ten years ago. Since about 2021 phonk is what the
+headphones on the floor are actually playing.
+
+## What is honestly not in here
+
+Three tracks that belong on any worldwide gym list have **no official
+upload at all**, and rather than link a re-upload that will 404 they were
+left out:
+
+- **Eminem — Till I Collapse.** Never released as a single. The only
+  uploads are fan channels and one NEFFEX remix. This is the single most
+  cited gym record in the world and it is not on the page.
+- **Bill Conti — Gonna Fly Now.** The *Rocky* theme has no authoritative
+  upload.
+- **Swedish House Mafia — Greyhound.** The official channel carries only a
+  live cut.
+
+Also left out: anything whose *title* carries explicit profanity, which is
+a house rule rather than a judgement about the music, and Kanye's *POWER*,
+whose only official video is a 1:43 short film — too short to lift to.
+
+## The list is an argument
+
+The same caveat as the gym room applies twice as hard here. Nobody records
+what gyms play. There is no dataset. This is a curated argument about the
+global canon, and it skews heavily anglophone because the canon does —
+rock, metal, hip-hop and EDM, with German industrial metal and Hindi film
+anthems included because they genuinely get played, not to manufacture
+balance.
+
+## The one thing that could not be checked
+
+Embeddability. Every embedded-player endpoint YouTube exposes is blocked
+to the address this was built from, so *whether a given video will actually
+play in an iframe was never machine-verified* — for this page or the gym
+one. Preferring official and label channels is the best available proxy,
+and it is a proxy, not a proof. The player still treats it as unknown: a
+record that errors on load is dropped from the queue and the next one
+starts, which is the behaviour that matters when it happens on a phone in
+a gym.

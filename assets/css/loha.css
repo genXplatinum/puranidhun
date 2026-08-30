@@ -229,6 +229,24 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   font-weight:600;font-size:.7rem;letter-spacing:.34em;
   text-transform:uppercase;color:var(--haz);padding-left:.34em;
 }
+/*  The gym room's wordmark is Gurmukhi with a Latin sub-label under it.
+    The worldwide room has no one language to speak for, so its mark is a
+    single Latin word set at the same size the Gurmukhi would have been. */
+.mark__lat--solo{
+  margin-top:0;padding-left:0;
+  font-family:var(--sign);font-weight:700;
+  font-size:clamp(1.5rem,4.4vw,2.4rem);letter-spacing:.04em;
+  color:var(--chalk);
+}
+.mark__lat--solo + .mark__lat{margin-top:.3rem}
+
+/*  a chip that is a door to the other room rather than a control */
+.chip--go{
+  text-decoration:none;color:var(--haz);
+  border-color:color-mix(in srgb, var(--haz) 45%, transparent);
+}
+.chip--go:hover{background:var(--haz);border-color:var(--haz);color:#000}
+
 .stat{
   font-weight:700;font-size:.82rem;letter-spacing:.1em;color:var(--chalk-3);
   font-variant-numeric:tabular-nums;
@@ -330,6 +348,12 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   font-weight:700;font-size:clamp(.8rem,2.4vw,1.05rem);
   letter-spacing:.5em;text-transform:uppercase;color:var(--haz);padding-left:.5em;
 }
+/*  MAX stands alone on the door — no second line under it, and set in
+    Khand rather than the Gurmukhi face the gym room uses. */
+.gate__mark--solo b{
+  font-family:var(--sign);font-weight:700;letter-spacing:.02em;
+}
+
 .gate__line{
   margin:1.9rem auto 2.3rem;max-width:26ch;
   font-weight:500;font-size:clamp(1rem,2.6vw,1.3rem);
@@ -344,7 +368,7 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   box-shadow:0 5px 0 var(--haz-deep);
   transition:transform .08s var(--ease), box-shadow .08s var(--ease), background .16s;
 }
-.gate__key:hover{background:#ffe250}
+.gate__key:hover{background:color-mix(in srgb, var(--haz) 80%, #fff)}
 .gate__key:active{transform:translateY(5px);box-shadow:0 0 0 var(--haz-deep)}
 .gate__fine{
   margin-top:1.7rem;
@@ -463,18 +487,22 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   .title{text-shadow:none}
 }
 
-/* ── 13  the three decks ────────────────────────────────────────── */
-/*  One page, three playlists. The switch is a row of plates bolted to
-    the wall, not a tab strip — the live one is painted in whatever the
-    room is lit with.
+/* ── 13  the decks ──────────────────────────────────────────────── */
+/*  One page, four playlists — on either room. The switch is a row of
+    plates bolted to the wall, not a tab strip: the live one is painted in
+    whatever the room is lit with.
 
     Each deck repaints the whole page, not just the corridor: the accent
     token is swapped on <html data-deck>, so every chip, slider, underline
-    and lit key follows the room. Now is hazard yellow, the Era is
-    tungsten amber, Badmashi is red.
+    and lit key follows the room.
 
-    All three clear 4.5:1 on the void (#08090b) and carry black text when
-    a key is pressed down — 5.6:1 for the red, which is the tightest. */
+    The GYM room takes the warm half of the wheel — hazard yellow, tungsten
+    amber, red, rani pink — and the MAX room takes the cold half plus one
+    acid green, so the two pages can never be mistaken for one another.
+
+    Every accent clears 4.5:1 on the void (#08090b) and carries black text
+    when a key is pressed down. The tightest are Badmashi's red at 5.6:1
+    and Rap's violet at 6.3:1. */
 :root[data-deck="era"]{
   --haz:#ff9c24;
   --haz-deep:#c26f10;
@@ -495,6 +523,37 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
 /*  Badmashi is the one deck that is not lit from above. The vignette
     closes in and the ground goes to almost nothing, so the corridor is
     doing the talking and the type sits in what is left. */
+/*  ── max.html ──────────────────────────────────────────────────
+    Iron is deliberately achromatic: a bare fluorescent tube over
+    concrete has no colour, and against four coloured rooms the absence
+    reads as its own thing. 17:1 on the void — the brightest on the site,
+    which is the point. */
+:root[data-deck="iron"]{
+  --haz:#e9eff6;
+  --haz-deep:#93a3b4;
+  --ice:#8ce9ff;
+}
+/*  Violet at 6.3:1, the tightest accent here and still well clear. */
+:root[data-deck="rap"]{
+  --haz:#a17bff;
+  --haz-deep:#6d4bd1;
+  --ice:#d9c8ff;
+}
+:root[data-deck="volt"]{
+  --haz:#22e0ff;
+  --haz-deep:#0d8fac;
+  --ice:#bff4ff;
+}
+/*  Safety green — the colour of the sign over the fire door, and the one
+    hue neither room had taken. 15.9:1. */
+:root[data-deck="rise"]{
+  --haz:#a6ff3d;
+  --haz-deep:#6aa81c;
+  --ice:#e2ffb8;
+}
+/*  Rap is the other room lit from the side rather than above: same
+    treatment as Badmashi, so the corridor carries it. */
+:root[data-deck="rap"] #vig,
 :root[data-deck="badmashi"] #vig{
   background:
     radial-gradient(ellipse 62% 48% at 50% 46%, rgba(0,0,0,.80) 0%, rgba(0,0,0,.38) 45%, transparent 74%),
@@ -508,7 +567,13 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   border:1px solid var(--edge);background:rgba(12,14,18,.7);
   color:var(--chalk-2);cursor:pointer;
   padding:.42rem 1.15rem .38rem;
-  display:flex;flex-direction:column;align-items:center;gap:.05rem;
+  /*  A plate is a target for a thumb, and the thumb belongs to someone
+      who is mid-set. Dropping the year sub-label at 365px shrank these to
+      24px tall — legible, and far too small to hit. The height is held
+      here so no breakpoint can take it below a reachable size. */
+  min-height:44px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.05rem;
   backdrop-filter:blur(3px);
   transition:color .14s var(--ease), border-color .14s var(--ease),
              background .14s var(--ease), transform .07s var(--ease);
@@ -542,7 +607,7 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
     to go — the names already say what each one is, and a rail you have to
     scroll to find the fourth deck on is worse than a rail without dates. */
 @media (max-width:365px){
-  .deck-btn{padding:.34rem .42rem .3rem}
+  .deck-btn{padding:.34rem .42rem .3rem;min-height:42px}
   .deck-btn b{font-size:.68rem;letter-spacing:.03em}
   .deck-btn span{display:none}
   #decks{gap:.22rem}

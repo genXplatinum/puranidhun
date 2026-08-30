@@ -1,12 +1,18 @@
 /*  LOHA — the machine
  *  ------------------------------------------------------------------
- *  Two decks, one corridor.
+ *  The player behind both gym rooms: /gym.html (Punjabi) and /max.html
+ *  (worldwide). Same corridor, same beat clock, same controls — what
+ *  differs is only the catalogue, the deck cuts and the colour of the
+ *  light, so all of that arrives as configuration and none of it is
+ *  written here. See assets/js/deck-gym.js and assets/js/deck-max.js.
  *
- *    NOW      2019 onward — the heavy modern stuff
- *    2005–18  the era: what was actually on repeat in gyms then
+ *  A page must set window.LOHA_CONF before this file runs:
  *
- *  A track belongs to one deck or the other by its release year. There
- *  is no overlap and no judgement call: 2018 and earlier is the era.
+ *      store   localStorage namespace, one per page
+ *      title   what goes in the tab after the track name
+ *      bpm     the tempo the clock assumes before anyone taps
+ *      tracks  () => the flat catalogue array
+ *      decks   [{ id, name, cue, pick(track), look{accent,lamp,mood,party} }]
  *
  *  ── on the beat ───────────────────────────────────────────────────
  *  The player is a cross-origin YouTube iframe, so its audio cannot be
@@ -16,8 +22,7 @@
  *
  *  What it does instead is keep a TEMPO CLOCK. Playback position is
  *  known to the frame, so given a tempo the beat is just arithmetic.
- *  The default is 96 BPM, which is where most of this music sits, and
- *  the Tap key sets both the real tempo and the phase — four taps and
+ *  The Tap key sets both the real tempo and the phase — four taps and
  *  the room is on the beat, per track, remembered.
  *  ------------------------------------------------------------------ */
 
@@ -29,50 +34,22 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /*  One flat catalogue; the decks are cuts of it, so a record lives in
-      exactly one place and can belong to two decks without being stored
-      twice. `now` and `era` split on year and never overlap. `badmashi`
-      is the other axis — a genre mark carried on the record itself — so
-      it crosses both and reaches back past where either one starts. */
-  const ALL = (window.GYM && window.GYM.tracks) || [];
-  /*  Each record says what it is — g under a bar, b badmashi, d floor —
-      and the decks cut on those marks, not on vibes. The year decks
-      require `g`, which is what stops a wedding banger from turning up in
-      The Era just because it was released in 2016. */
-  const DECKS = {
-    now:      ALL.filter(t => t.g && t.y >= 2019),
-    era:      ALL.filter(t => t.g && t.y >= 2005 && t.y <= 2018),
-    badmashi: ALL.filter(t => t.b && t.y >= 2000 && t.y <= 2016),
-    dance:    ALL.filter(t => t.d && t.y >= 2000),
-  };
-  const DECK_IDS = ['now', 'era', 'badmashi', 'dance'];
-  const CUE = {
-    now: 'Heavy rotation',
-    era: 'On repeat, 2005–18',
-    badmashi: 'Badmashi · ਬਦਮਾਸ਼ੀ',
-    dance: 'Bhangra · ਭੰਗੜਾ',
-  };
-  const DECK_NAME = { now: 'Now', era: '2005–18',
-                      badmashi: 'Badmashi 2000–16', dance: 'Dance 2000–26' };
-
-  /*  What the corridor is made of on each deck. Now is a working shed:
-      cold strip lights, hazard yellow. The Era is lit on tungsten, which
-      is what a room lit in 2011 actually looked like. Badmashi is the
-      same corridor after someone cut the white lights — red on rusted
-      steel, and it bites harder on the downbeat. */
-  const LOOK = {
-    now:      { accent: [1.00, 0.80, 0.02], lamp: [0.85, 0.90, 1.00], mood: 0.00 },
-    era:      { accent: [1.00, 0.60, 0.14], lamp: [1.00, 0.80, 0.52], mood: 0.38 },
-    badmashi: { accent: [1.00, 0.21, 0.15], lamp: [1.00, 0.28, 0.20], mood: 1.00 },
-    /*  Dance is the one room that is not iron. Same corridor, but somebody
-        has patched a lighting desk into it: party drives the hue wheel in
-        the shader, so every lamp bar takes its own colour and the chevrons
-        run as chase lights. The accent is rani pink — the colour of every
-        Punjabi wedding tent there has ever been. */
-    dance:    { accent: [1.00, 0.24, 0.60], lamp: [1.00, 0.55, 0.85], mood: 0.15,
-                party: 1.00 },
-  };
-  const DEFAULT_BPM = 96;
+  /*  Every page hands the engine its own catalogue and its own cuts.
+      A deck's `pick` is a predicate over one record, so a deck can be a
+      year range, a genre mark, or both, and a record can sit in two
+      decks without being stored twice. */
+  const CONF   = window.LOHA_CONF || {};
+  const ALL    = (CONF.tracks && CONF.tracks()) || [];
+  const SPEC   = CONF.decks || [];
+  const DECK_IDS = SPEC.map(d => d.id);
+  const DECKS  = {}, CUE = {}, DECK_NAME = {}, LOOK = {};
+  SPEC.forEach(d => {
+    DECKS[d.id]     = ALL.filter(d.pick);
+    CUE[d.id]       = d.cue;
+    DECK_NAME[d.id] = d.name;
+    LOOK[d.id]      = d.look;
+  });
+  const DEFAULT_BPM = CONF.bpm || 96;
 
   /* how hard the room is allowed to hit. Reduced motion does not get a
      still page — it gets a room that lights on the beat but never moves
@@ -80,7 +57,7 @@
   const FORCE_CAP = REDUCED ? 0.28 : 1;
 
   const S = {
-    deck: 'now',
+    deck: '',
     queue: [], i: 0,
     shuffle: false, playing: false, started: false,
     volume: 85, force: 0.7,
@@ -94,7 +71,7 @@
   };
 
   /* ═══ store ═════════════════════════════════════════════════════ */
-  const KEY = 'loha:v1';
+  const KEY = CONF.store || 'loha:v1';
   const store = {
     read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
     write(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} },
@@ -227,11 +204,11 @@
               (REDUCED ? 0 : S.kick * F * 0.035 * S.shakeX);
 
     if (gpu && !gpu.lost()) {
-      const look = LOOK[S.deck] || LOOK.now;
+      const look = LOOK[S.deck] || LOOK[DECK_IDS[0]] || {};
       gpu.draw({ time: now / 1000, dist: S.dist, beat: S.beat, bar: S.bar,
                  force: F, roll: S.roll,
                  accent: look.accent, lamp: look.lamp,
-                 mood: look.mood, party: look.party || 0 });
+                 mood: look.mood || 0, party: look.party || 0 });
     }
 
     /*  The room takes the hit, and the type takes a smaller one. The
@@ -325,10 +302,10 @@
     $('#by').textContent    = t.a || '';
     $('#year').textContent  = t.y || '';
     $('#film').textContent  = t.al || '';
-    $('#cue').textContent   = CUE[S.deck] || CUE.now;
+    $('#cue').textContent   = CUE[S.deck] || '';
     $('#src').href = 'https://www.youtube.com/watch?v=' + t.v;
     $('#n-now').textContent = String(S.i + 1).padStart(2, '0');
-    document.title = t.t + ' — Loha';
+    document.title = t.t + ' — ' + (CONF.title || 'Loha');
   }
 
   const play   = () => ytReady && yt.playVideo();
@@ -434,7 +411,12 @@
       if (!open) setTimeout(() => { el.hidden = true; }, 300);
     });
     $('#k-list').setAttribute('aria-expanded', String(open));
-    if (open) setTimeout(() => $('#q').focus(), 180);
+    if (open) { setTimeout(() => $('#q').focus(), 180); return; }
+    /*  Closing has to hand focus back. Leaving it on the search box means
+        focus is sitting on an element that is about to be hidden — the
+        keyboard shortcuts then read every keystroke as typing, and a
+        screen reader is left pointing at nothing. */
+    if (el.contains(document.activeElement)) $('#k-list').focus();
   }
 
   /* ═══ wiring ════════════════════════════════════════════════════ */
@@ -507,10 +489,11 @@
         case 'ArrowDown':  e.preventDefault(); setVolume(S.volume - 5); break;
         case 's': case 'S': $('#k-shuffle').click(); break;
         case 't': case 'T': tap(); break;
-        case '1': setDeck('now'); break;
-        case '2': setDeck('era'); break;
-        case '3': setDeck('badmashi'); break;
-        case '4': setDeck('dance'); break;
+        default:
+          if (/^[1-9]$/.test(e.key)) {
+            const d = DECK_IDS[+e.key - 1];
+            if (d) setDeck(d);
+          }
       }
     });
 
@@ -531,8 +514,12 @@
   /* ═══ boot ══════════════════════════════════════════════════════ */
 
   function boot() {
+    if (!DECK_IDS.length) {          // no config, nothing to play
+      console.error('LOHA: window.LOHA_CONF is missing or has no decks');
+      return;
+    }
     const saved = store.read();
-    if (DECK_IDS.indexOf(saved.deck) >= 0) S.deck = saved.deck;
+    S.deck = DECK_IDS.indexOf(saved.deck) >= 0 ? saved.deck : DECK_IDS[0];
     S.haptics = !!saved.haptics && !!navigator.vibrate;
 
     startCorridor();

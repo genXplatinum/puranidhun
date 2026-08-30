@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="fonts-inline.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1200px;height:630px;overflow:hidden;background:#08090b}
+  #wrap{position:relative;width:1200px;height:630px;isolation:isolate}
+  #bg{position:absolute;inset:0;width:1200px;height:630px;display:block}
+  /* the same two layers the pages put over the corridor */
+  #vig{position:absolute;inset:0;background:
+    radial-gradient(ellipse 74% 60% at 50% 48%, transparent 0%, rgba(0,0,0,.34) 58%, rgba(0,0,0,.72) 100%),
+    linear-gradient(rgba(0,0,0,.62), transparent 26%, transparent 58%, rgba(0,0,0,.80));}
+  /*  The corridor is brightest at the vanishing point, which is precisely
+      where the wordmark goes. The pages never have this problem because
+      their type moves; a still card needs the ground held down. */
+  #pad{position:absolute;inset:0;background:
+    radial-gradient(ellipse 46% 52% at 50% 46%, rgba(6,7,9,.80) 0%, rgba(6,7,9,.55) 46%, transparent 76%);}
+  #grain{position:absolute;inset:0;opacity:.05;background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.5) 0 1px, transparent 1px 3px);}
+  #type{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+    font-family:'Khand',sans-serif;color:#f0ede5;}
+  .kick{font-weight:600;font-size:19px;letter-spacing:.46em;text-transform:uppercase;
+    color:#7e858e;padding-left:.46em;margin-bottom:26px}
+  .mark{line-height:.88;font-weight:400;color:#f0ede5}
+  .mark--deva{font-family:'Tiro Devanagari Hindi',serif;font-size:118px}
+  .mark--gur{font-family:'Tiro Gurmukhi',serif;font-size:130px}
+  .mark--lat{font-family:'Khand',sans-serif;font-weight:700;font-size:158px;letter-spacing:.02em}
+  .sub{margin-top:22px;font-weight:700;font-size:25px;letter-spacing:.44em;
+    text-transform:uppercase;padding-left:.44em}
+  .rule{width:132px;height:2px;margin:34px 0 30px;opacity:.5}
+  .line{max-width:31ch;font-weight:500;font-size:31px;line-height:1.34;color:#a8afb8}
+  .foot{position:absolute;left:0;right:0;bottom:38px;
+    font-weight:600;font-size:19px;letter-spacing:.2em;text-transform:uppercase;color:#7e858e}
+  .foot b{font-weight:700}
+</style></head><body>
+<div id="wrap">
+  <canvas id="bg" width="1200" height="630"></canvas>
+  <div id="vig"></div><div id="pad"></div><div id="grain"></div>
+  <div id="type">
+    <p class="kick" id="kick"></p>
+    <h1 class="mark" id="mark"></h1>
+    <p class="sub" id="sub"></p>
+    <div class="rule" id="rule"></div>
+    <p class="line" id="line"></p>
+    <p class="foot" id="foot"></p>
+  </div>
+</div>
+<script src="corridor.js"></script>
+<script src="cards.js"></script>
+<script>
+(function(){
+  const id = new URLSearchParams(location.search).get('c') || 'main';
+  const C  = window.CARDS[id];
+  const kick = document.getElementById('kick');
+  if (C.kick) kick.textContent = C.kick; else kick.remove();
+  const mk = document.getElementById('mark');
+  mk.textContent = C.mark; mk.className = 'mark mark--' + C.face;
+  const sub = document.getElementById('sub');
+  sub.textContent = C.sub; sub.style.color = C.accent;
+  document.getElementById('rule').style.background = C.accent;
+  document.getElementById('line').textContent = C.line;
+  document.getElementById('foot').innerHTML = C.foot;
+  document.querySelectorAll('.foot b').forEach(b => b.style.color = C.accent);
+
+  const gpu = window.CORRIDOR.start(document.getElementById('bg'));
+  window.__drew = false;
+  if (gpu) {
+    /*  One frame, held. `dist` is chosen so a lamp bar sits above the
+        wordmark rather than behind it, and beat/bar are 0 — a still card
+        should be the room at rest, not caught mid-hit. */
+    gpu.draw({ time: 11.0, dist: C.dist, beat: 0, bar: 0, force: 0.7,
+               roll: 0, accent: C.rgb, lamp: C.lamp, mood: C.mood, party: C.party||0 });
+    window.__drew = !gpu.lost();
+  }
+  document.fonts.ready.then(() => { window.__fonts = true; });
+})();
+</script></body></html>

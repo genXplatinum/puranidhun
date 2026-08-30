@@ -60,12 +60,20 @@ assets/js/max-catalog.js      202 worldwide tracks, one flat list
 assets/js/deck-gym.js         gym.html's decks, cuts and colours
 assets/js/deck-max.js         max.html's decks, cuts and colours
 
-assets/img/favicon.svg        the only image either page loads
+assets/img/favicon.svg        the only image any page loads
 assets/img/og.png             link previews only; never fetched by a page
+assets/img/og-gym.png         "
+assets/img/og-max.png         "
+tools/og/                     how those three cards are generated
 ```
 
-No build step, no dependencies, no photographs. The only bitmap anywhere
-is the link-preview card.
+No build step, no dependencies, no photographs. The only bitmaps anywhere
+are the three link-preview cards, and no page ever fetches one.
+
+Those cards are **generated, not drawn** — each is a real render of the page
+it belongs to, same shader, same fonts, same tokens, held on one frame. If a
+room's identity, record count or line changes, regenerate them: see
+`tools/og/README.md`. The counts are printed on the cards and go stale.
 
 **Three pages, two machines.** `app.js` drives the main page, because rooms
 and a rangoli are genuinely a different thing. `loha.js` drives *both* gym

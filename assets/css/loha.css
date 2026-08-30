@@ -13,15 +13,15 @@
    the narrow-screen and reduced-motion rules for all of it.
 
    What is NOT here is anything only one page has. index.html adds
-   dhun.css for the rangoli and the room rail; gym.html adds nothing.
+   dhun.css for the transport and the rooms; the gym pages add nothing.
 
-   Two tokens are repointed rather than duplicated:
-     --gur    the voice face. Tiro Gurmukhi on the gym page (Punjabi
-              records), Tiro Devanagari Hindi on the main one, which
-              dhun.css sets. Every rule that reaches for the voice keeps
-              working either way.
+   One typeface, one script. Every wordmark and every title used to be
+   set twice — the record's own script big and the Latin underneath it —
+   and the site now sets each one once, in Latin. So Khand does all of
+   it and there is no second face to name.
+
      --haz    the accent. Written from JS — the deck's colour on the gym
-              page, the room's lead pigment on the main one.
+              pages, the room's lead pigment on the main one.
 
    Khand does the shouting on both, because it already is the lettering
    on Indian shop boards.
@@ -55,7 +55,6 @@
   --ice:#8ce9ff;
 
   --sign:'Khand','Nirmala UI','Segoe UI',system-ui,sans-serif;
-  --gur:'Tiro Gurmukhi','Nirmala UI',Georgia,serif;
 
   --shell:clamp(1rem,3vw,2.6rem);
   --ease:cubic-bezier(.2,.7,.3,1);
@@ -70,7 +69,12 @@
 html{-webkit-text-size-adjust:100%;color-scheme:dark}
 body{
   margin:0;
-  height:100svh;min-height:30rem;
+  height:100svh;
+  /*  There was a `min-height:30rem` here, and it was the whole of the
+      60px of dead scroll every page had in phone landscape: 30rem is
+      480px against a 420px viewport. It bought nothing — #shell is
+      position:fixed to the viewport, so the layout never once consulted
+      the height of the body. */
   overflow:hidden;
   background:var(--void);
   color:var(--chalk);
@@ -99,10 +103,19 @@ button,input{font:inherit;color:inherit}
 /* ── 3  the corridor ────────────────────────────────────────────── */
 /*  The corridor sits in a box larger than the window on every side, so
     the shake can throw it around without ever exposing an edge. */
-#room{position:fixed;inset:-2.5rem;z-index:0;will-change:transform}
+/*  Both of these need to be bigger than the screen — #room so the shake
+    never reveals an edge, #grain so its drift never does. They used to
+    get that with a negative inset, but they are position:fixed, and a
+    fixed box is laid out against the viewport: body's overflow:hidden
+    cannot clip it and neither can overflow:clip on the root. The result
+    was 60px of real scroll on every page at phone-landscape height — you
+    could drag the whole interface off the top and find nothing under it.
+    So the boxes sit at inset:0 and CLIP, and the overhang moved inside
+    them, where it is somebody's child and can be clipped like one. */
+#room{position:fixed;inset:0;z-index:0;overflow:hidden}
 #bg{
-  position:absolute;inset:0;width:100%;height:100%;
-  display:block;
+  position:absolute;inset:-2.5rem;width:auto;height:auto;
+  display:block;will-change:transform;
   /* what shows if WebGL never comes up: a lit floor, not a black hole */
   background:
     radial-gradient(ellipse 90% 55% at 50% 108%, #2a2f38 0%, transparent 70%),
@@ -118,15 +131,18 @@ button,input{font:inherit;color:inherit}
 }
 /* dust on the lens: scanlines plus a static grain plate */
 #grain{
-  position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.16;
+  position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.16;overflow:hidden;
   background-image:
     repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 1px, transparent 1px 3px),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.5'/></svg>");
+  /*  The drift used to translate the whole layer, which is what made it
+      need the -50% inset. Moving the BACKGROUND instead gets the same
+      shimmer out of a box that never leaves the screen. */
   animation:drift .9s steps(3) infinite;
 }
 @keyframes drift{
-  0%{transform:translate(0,0)}      33%{transform:translate(-2%,1.5%)}
-  66%{transform:translate(1.5%,-1%)} 100%{transform:translate(0,0)}
+  0%{background-position:0 0, 0 0}        33%{background-position:0 -1px, -17px 9px}
+  66%{background-position:0 1px, 11px -6px} 100%{background-position:0 0, 0 0}
 }
 
 /*  The shell holds everything you can touch and never moves. Only #type
@@ -138,6 +154,10 @@ button,input{font:inherit;color:inherit}
   gap:.6rem;
 }
 #type{
+  /*  Full width on purpose. As a shrink-to-fit column its clientWidth was
+      the width of its widest CHILD, and the title-fitting measurement in
+      app.js / loha.js needs the width actually available to it. */
+  width:100%;min-width:0;
   display:flex;flex-direction:column;align-items:center;gap:.5rem;
   will-change:transform;
 }
@@ -220,18 +240,15 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
 }
 .back:hover{color:var(--haz);border-color:var(--haz)}
 .mark{text-align:center;line-height:1}
-.mark__gur{
-  display:block;font-family:var(--gur);font-weight:400;
-  font-size:clamp(1.5rem,4.2vw,2.3rem);color:var(--chalk);
-}
 .mark__lat{
   display:block;margin-top:.35rem;
   font-weight:600;font-size:.7rem;letter-spacing:.34em;
   text-transform:uppercase;color:var(--haz);padding-left:.34em;
 }
-/*  The gym room's wordmark is Gurmukhi with a Latin sub-label under it.
-    The worldwide room has no one language to speak for, so its mark is a
-    single Latin word set at the same size the Gurmukhi would have been. */
+/*  Every header reads the same way now: the name, then what the room is.
+    It used to be the name in the record's own script with the Latin
+    transliteration under it, which meant the top of each page said the
+    same word twice. */
 .mark__lat--solo{
   margin-top:0;padding-left:0;
   font-family:var(--sign);font-weight:700;
@@ -272,7 +289,15 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   font-size:clamp(2.4rem,12vw,8.5rem);
   letter-spacing:-.015em;text-transform:uppercase;
   color:var(--chalk);
-  text-wrap:balance;max-width:16ch;
+  /*  One line, never two — loha.js measures the text and scales the
+      size down to fit rather than letting it wrap. */
+  /*  min-width:0 is load-bearing. A flex item defaults to
+      min-width:auto, which for nowrap text is the min-content width —
+      the whole title. That silently overrode max-width and let the box
+      grow to 862px inside a 320px screen, so the measuring code saw a
+      box that already fitted and never shrank anything. */
+  white-space:nowrap;max-width:100%;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;
   text-shadow:
     calc(var(--split) * -1) 0 rgba(255,59,45,.85),
     var(--split) 0 rgba(140,233,255,.75);
@@ -325,57 +350,117 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   gap:.5rem .7rem;
 }
 
-/* ── 9  the door ────────────────────────────────────────────────── */
-#gate{
-  position:fixed;inset:0;z-index:50;
-  display:grid;place-items:center;text-align:center;
-  background:radial-gradient(ellipse 70% 60% at 50% 50%, #0d1015 0%, #050608 75%);
-  transition:opacity .55s var(--ease), visibility .55s;
+/* ── 9  the loading screen ──────────────────────────────────────── */
+/*  There used to be a door here with a button on it, and the button was
+    load-bearing: a browser will not start audio without a user gesture,
+    so the press that opened the door was also the press that unlocked
+    the sound. This replaces it with a screen that fills and then lets
+    you in on its own — and keeps the gesture opportunistically, because
+    a tap during the load still counts. See made.js's sibling logic in
+    app.js / loha.js. */
+#boot{
+  position:fixed;inset:0;z-index:60;
+  display:grid;place-items:center;padding:var(--shell);
+  background:var(--void);
+  transition:opacity .5s var(--ease), visibility .5s;
 }
-#gate[data-open]{opacity:0;visibility:hidden;pointer-events:none}
-.gate__in{padding:var(--shell);max-width:36rem}
-.gate__kick{
-  font-weight:600;font-size:.7rem;letter-spacing:.4em;text-transform:uppercase;
-  color:var(--chalk-3);margin-bottom:1.6rem;padding-left:.4em;
+#boot[data-go]{opacity:0;visibility:hidden;pointer-events:none}
+.boot__in{text-align:center;max-width:34rem}
+.boot__kick{
+  font-weight:600;font-size:.72rem;letter-spacing:.42em;
+  text-transform:uppercase;color:var(--chalk-3);padding-left:.42em;
+  margin-bottom:1.15rem;
 }
-.gate__mark{line-height:.9}
-.gate__mark b{
-  display:block;font-family:var(--gur);font-weight:400;
-  font-size:clamp(4rem,17vw,9rem);color:var(--chalk);
+/*  The one word on the page that is allowed to be the accent colour and
+    not be a control. */
+.boot__love{color:var(--haz)}
+.boot__mark{
+  font-family:var(--sign);font-weight:700;line-height:.86;
+  font-size:clamp(2.8rem,11vw,6rem);letter-spacing:.01em;color:var(--chalk);
 }
-.gate__mark span{
-  display:block;margin-top:.9rem;
-  font-weight:700;font-size:clamp(.8rem,2.4vw,1.05rem);
-  letter-spacing:.5em;text-transform:uppercase;color:var(--haz);padding-left:.5em;
+.boot__mark span{
+  display:block;margin-top:.5rem;
+  font-weight:600;font-size:clamp(.78rem,2.2vw,1rem);
+  letter-spacing:.52em;text-transform:uppercase;
+  color:var(--chalk-3);padding-left:.52em;
 }
-/*  MAX stands alone on the door — no second line under it, and set in
-    Khand rather than the Gurmukhi face the gym room uses. */
-.gate__mark--solo b{
-  font-family:var(--sign);font-weight:700;letter-spacing:.02em;
+/*  The bar is the load, and it reaches the end exactly when the screen
+    goes. That is why it is a TRANSITION started from JS rather than a CSS
+    animation: an animation's clock starts at first paint, the exit timer's
+    clock starts when the script runs, and on a slow connection those are
+    not the same moment — the bar was still at nothing when the screen
+    left. Both are now started inside one requestAnimationFrame, so there
+    is a single clock and the two cannot drift. */
+.boot__bar{
+  width:min(15rem,60vw);height:3px;margin:2.4rem auto 0;
+  background:var(--edge);overflow:hidden;
 }
-
-.gate__line{
-  margin:1.9rem auto 2.3rem;max-width:26ch;
-  font-weight:500;font-size:clamp(1rem,2.6vw,1.3rem);
-  color:var(--chalk-2);text-wrap:balance;
+.boot__bar i{
+  display:block;height:100%;width:100%;
+  background:linear-gradient(90deg, var(--haz), color-mix(in srgb, var(--haz) 55%, #fff));
+  transform:scaleX(0);transform-origin:0 50%;
+  transition:transform var(--boot, 2600ms) linear;
 }
-.gate__key{
-  border:0;cursor:pointer;
-  padding:1.05rem 3rem 1.1rem;
-  background:var(--haz);color:#000;
-  font-weight:700;font-size:clamp(1rem,2.6vw,1.3rem);
-  letter-spacing:.2em;text-transform:uppercase;
-  box-shadow:0 5px 0 var(--haz-deep);
-  transition:transform .08s var(--ease), box-shadow .08s var(--ease), background .16s;
-}
-.gate__key:hover{background:color-mix(in srgb, var(--haz) 80%, #fff)}
-.gate__key:active{transform:translateY(5px);box-shadow:0 0 0 var(--haz-deep)}
-.gate__fine{
-  margin-top:1.7rem;
-  font-weight:600;font-size:.76rem;letter-spacing:.18em;
+#boot[data-run] .boot__bar i{transform:scaleX(1)}
+.boot__fine{
+  margin-top:1.5rem;
+  font-weight:600;font-size:.72rem;letter-spacing:.18em;
   text-transform:uppercase;color:var(--chalk-3);
 }
-.gate__fine span{color:var(--haz);font-variant-numeric:tabular-nums}
+.boot__fine span{color:var(--haz);font-variant-numeric:tabular-nums}
+
+/* ── 9b  the studio credit, and the doors behind it ─────────────── */
+.chip--made{color:var(--chalk-3)}
+.chip--made:hover,.chip--made[aria-expanded="true"]{color:var(--chalk)}
+#made{
+  position:fixed;inset:0;z-index:55;
+  display:grid;place-items:center;padding:var(--shell);
+  background:rgba(5,6,8,.95);
+  opacity:0;transition:opacity .22s var(--ease);
+}
+#made[data-open]{opacity:1}
+.made__in{width:100%;max-width:52rem;text-align:center}
+.made__kick{
+  font-weight:600;font-size:.7rem;letter-spacing:.42em;
+  text-transform:uppercase;color:var(--chalk-3);padding-left:.42em;
+}
+.made__mark{
+  margin-top:.5rem;font-family:var(--sign);font-weight:700;
+  font-size:clamp(2.4rem,8vw,4.4rem);line-height:.9;
+  letter-spacing:.01em;color:var(--chalk);
+}
+.made__line{
+  margin:.9rem auto 2rem;max-width:34ch;
+  font-weight:500;font-size:clamp(.92rem,2.2vw,1.1rem);color:var(--chalk-2);
+}
+.made__doors{
+  display:grid;gap:.6rem;text-align:left;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+}
+.door{
+  display:flex;flex-direction:column;gap:.16rem;
+  padding:1.05rem 1.1rem 1.1rem;text-decoration:none;
+  border:1px solid var(--edge);background:rgba(12,14,18,.72);
+  transition:border-color .14s var(--ease), background .14s var(--ease),
+             transform .07s var(--ease);
+}
+.door:hover{border-color:var(--haz);background:rgba(18,21,26,.9)}
+.door:active{transform:translateY(2px)}
+.door__name{
+  display:flex;align-items:center;gap:.4rem;
+  font-weight:700;font-size:1.05rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--chalk);
+}
+.door__out{
+  width:.8em;height:.8em;flex:none;fill:none;stroke:var(--haz);
+  stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
+}
+.door__sub{
+  font-weight:600;font-size:.68rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--haz);
+}
+.door__line{margin-top:.35rem;font-size:.82rem;color:var(--chalk-3);line-height:1.35}
+.made__close{margin-top:1.6rem}
 
 /* ── 10  the rack of tracks ─────────────────────────────────────── */
 #list{
@@ -390,9 +475,17 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   opacity:0;transform:translateY(1.2rem);pointer-events:none;
   transition:opacity .28s var(--ease), transform .28s var(--ease);
 }
-/* an id selector outranks the UA's [hidden]{display:none}; say it here
-   or the closed panel keeps eating clicks meant for the deck */
-#list[hidden]{display:none}
+/*  An id selector outranks the UA's [hidden]{display:none}, so every
+    overlay on the site has to say this for itself or the closed panel
+    sits over the page eating clicks meant for the deck. This has now
+    caught three of them — the track rack, the room picker and the
+    studio dialog — so all three are listed here together rather than
+    each rediscovering it. */
+#list[hidden],#picker[hidden],#made[hidden]{display:none}
+/*  And a second line of defence: even mid-fade, a panel that is not
+    open must not be in the way. */
+#picker:not([data-open]),#made:not([data-open]){pointer-events:none}
+#picker[data-open],#made[data-open]{pointer-events:auto}
 #list[data-open]{opacity:1;transform:none;pointer-events:auto}
 .list__bar{display:flex;gap:.9rem;align-items:center;padding:var(--shell) var(--shell) .8rem}
 #q{
@@ -443,8 +536,7 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
   /*  Three things across a 390px bar, and none of them may wrap: a
       two-line back link shoves the wordmark sideways and the whole
       header lists to one side. */
-  .back,.mark__lat,.mark__gur,.stat{white-space:nowrap}
-  .mark__gur{font-size:1.35rem}
+  .back,.mark__lat,.stat{white-space:nowrap}
   .mark__lat{letter-spacing:.2em;font-size:.58rem;margin-top:.25rem}
   .title{font-size:clamp(2rem,13vw,3.4rem);max-width:14ch}
   .keys{margin-top:.7rem;gap:.7rem}
@@ -615,4 +707,16 @@ input[type=range]::-moz-range-thumb{width:6px;height:16px;border-radius:0;border
 @media (max-height:520px){
   #decks{margin-top:0}
   .deck-btn span{display:none}
+}
+
+/*  On a narrow screen the title is allowed past the shell's side padding.
+    It is the one element on the page long enough to need it, and at 320px
+    those two gutters are about a tenth of the usable width — the
+    difference between a title fitting and being ellipsised. */
+@media (max-width:480px){
+  .title{
+    width:calc(100% + var(--shell) * 2);
+    max-width:calc(100% + var(--shell) * 2);
+    margin-inline:calc(var(--shell) * -1);
+  }
 }

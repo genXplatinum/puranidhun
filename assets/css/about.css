@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ABOUT — the one page you read rather than operate
+   ─────────────────────────────────────────────────────────────────
+   Every other page on this site is a machine: fixed to the viewport,
+   nothing scrolls, the whole thing sized to fit at once. This one is
+   text, so it is the only page that scrolls — which means #page rather
+   than #shell, and the corridor standing still behind it.
+
+   Everything else it needs (tokens, corridor layers, the top bar, the
+   chips, the .door tiles) comes from loha.css.
+   ═══════════════════════════════════════════════════════════════════ */
+
+#page{
+  position:relative;z-index:3;
+  min-height:100svh;
+  padding:var(--shell);
+  display:flex;flex-direction:column;gap:2.4rem;
+}
+/*  The machine pages pin the body; a page of prose has to be allowed to
+    scroll, so the rule that stops them is lifted here and here only. */
+html:has(#page), body:has(#page){height:auto;overflow:visible}
+
+#read{
+  width:100%;max-width:56rem;margin:0 auto;
+  display:flex;flex-direction:column;gap:3.2rem;padding-bottom:4rem;
+}
+
+.blk{display:flex;flex-direction:column;gap:.9rem}
+.blk__kick{
+  font-weight:600;font-size:.72rem;letter-spacing:.42em;
+  text-transform:uppercase;color:var(--chalk-3);padding-left:.42em;
+}
+.blk__mark{
+  font-family:var(--sign);font-weight:700;line-height:.88;
+  font-size:clamp(2.6rem,9vw,5rem);letter-spacing:.01em;color:var(--chalk);
+}
+.blk__mark span{
+  display:block;margin-top:.7rem;
+  font-weight:600;font-size:clamp(.74rem,2vw,.92rem);
+  letter-spacing:.4em;text-transform:uppercase;color:var(--haz);padding-left:.4em;
+}
+.blk__lead{
+  font-size:clamp(1.1rem,2.6vw,1.45rem);line-height:1.45;
+  color:var(--chalk-2);max-width:34ch;
+}
+.blk__h{
+  font-weight:700;font-size:.76rem;letter-spacing:.36em;
+  text-transform:uppercase;color:var(--haz);padding-left:.36em;
+}
+.blk__body{font-size:1rem;line-height:1.65;color:var(--chalk-2);max-width:62ch}
+.blk__body b{color:var(--chalk);font-weight:700}
+.blk__body a,.src a{
+  color:var(--chalk);text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb, var(--haz) 55%, transparent);
+  transition:border-color .14s, color .14s;
+}
+.blk__body a:hover,.src a:hover{color:var(--haz);border-bottom-color:var(--haz)}
+
+/*  The honesty note about the beat clock. It is set apart because it is
+    the one paragraph on the site that exists to say what the site does
+    NOT do, and it should not read as another feature. */
+.blk__note{
+  margin-top:.4rem;padding:1rem 1.15rem;max-width:62ch;
+  border-left:2px solid color-mix(in srgb, var(--haz) 50%, transparent);
+  background:rgba(12,14,18,.5);
+  font-size:.92rem;line-height:1.6;color:var(--chalk-3);
+}
+
+.cards,.ways{
+  display:grid;gap:.6rem;margin-top:.5rem;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+}
+.card{
+  border:1px solid var(--edge);background:rgba(12,14,18,.66);
+  padding:1.05rem 1.1rem 1.15rem;
+}
+.card h3{
+  font-weight:700;font-size:.9rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--chalk);margin-bottom:.4rem;
+}
+.card p{font-size:.86rem;line-height:1.5;color:var(--chalk-3)}
+
+.src{font-size:.78rem;color:var(--chalk-3);letter-spacing:.02em}
+
+/*  The top bar is built for a player, which puts three things in a row
+    and lets space-between sort them out. Here the third slot is empty,
+    so space-between pushed the mark off centre — three equal columns
+    hold it in the middle instead. */
+#page #top{flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:start}
+#page .back{justify-self:start}
+#page .stat{display:none}
+
+@media (max-width:760px){
+  .cards,.ways{grid-template-columns:1fr}
+  #read{gap:2.4rem}
+  #page{gap:1.6rem}
+}

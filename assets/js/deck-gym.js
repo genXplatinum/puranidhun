@@ -27,11 +27,11 @@ window.LOHA_CONF = {
       pick: t => t.g && t.y >= 2005 && t.y <= 2018,
       look: { accent: [1.00, 0.60, 0.14], lamp: [1.00, 0.80, 0.52], mood: 0.38 } },
 
-    { id: 'badmashi', name: 'Badmashi 2000–16', cue: 'Badmashi · ਬਦਮਾਸ਼ੀ',
+    { id: 'badmashi', name: 'Badmashi 2000–16', cue: 'Badmashi',
       pick: t => t.b && t.y >= 2000 && t.y <= 2016,
       look: { accent: [1.00, 0.21, 0.15], lamp: [1.00, 0.28, 0.20], mood: 1.00 } },
 
-    { id: 'dance',    name: 'Dance 2000–26',    cue: 'Bhangra · ਭੰਗੜਾ',
+    { id: 'dance',    name: 'Dance 2000–26',    cue: 'Bhangra',
       pick: t => t.d && t.y >= 2000,
       look: { accent: [1.00, 0.24, 0.60], lamp: [1.00, 0.55, 0.85], mood: 0.15,
               party: 1.00 } },

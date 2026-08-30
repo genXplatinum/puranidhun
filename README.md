@@ -45,11 +45,16 @@ assets/css/loha.css           THE SYSTEM. Both pages load it first.
 assets/js/corridor.js         one WebGL shader: the tunnel, both pages
 
 index.html                    the player — nine rooms of old records
-assets/css/dhun.css           this page's half: the rangoli, the rail
+assets/css/dhun.css           this page's half: the transport, the rooms
 assets/js/catalog.js          369 tracks, factual metadata only
 assets/js/rooms.js            nine rooms: three pigments and a sentence each
-assets/js/rangoli.js          the generative engine
+assets/js/reels.js            the cassette transport
 assets/js/app.js              queue, YouTube, tempo clock, rooms, index
+
+about.html                    who made this
+assets/css/about.css          the one page that scrolls
+assets/js/about.js            holds the corridor on a single frame
+assets/js/made.js             the studio credit and its dialog, all pages
 
 gym.html                      Loha — the Punjabi gym playlist, four decks
 max.html                      Max — the worldwide gym playlist, four decks
@@ -625,3 +630,116 @@ and it is a proxy, not a proof. The player still treats it as unknown: a
 record that errors on load is dropped from the queue and the next one
 starts, which is the behaviour that matters when it happens on a phone in
 a gym.
+
+
+---
+
+# What changed, and why
+
+Five things, in the order they were asked for.
+
+## The rangoli is a cassette transport now
+
+The middle of the front page used to hold a generated rangoli, seeded from
+the video id. It was the centrepiece of a **pale cement board**, and when
+the site went dark it was the last thing still speaking that language.
+
+What sits there now is two reels and the tape between them, and it is
+driven by the only two numbers the page actually knows:
+
+- **Tape moves at a constant linear speed**, so a reel's angular speed is
+  `v/r`. The supply reel starts fat and slow and visibly speeds up as it
+  empties; the take-up reel does the reverse. That is arithmetic, not
+  decoration.
+- **A pack's area is proportional to the tape on it**, so the radius goes
+  as `√(r_hub² + f·(r_max² − r_hub²))`. That is why a real cassette looks
+  nearly full for ages and then empties in a hurry, and why this does too.
+- **Rotation integrates wall-clock time; the radii come from position.**
+  Keeping those separate is what makes a seek spin the reels, hard, in the
+  right direction — which is what dragging a pencil through one does.
+
+The first version drew the wound tape as a fan of radial spokes. That is
+wrong and looks it: wound tape is *concentric*. It is fine rings now, which
+say nothing about motion, plus a handful of radial flaws and one bright
+leader, which say all of it — the same way you read a reel across a room.
+
+## The room rail is gone
+
+Nine plates sat across the top of the front page, permanently, on every
+screen, to show you the eight rooms you were *not* in. On a phone they
+scrolled sideways. They now live behind the room name that was already on
+screen above the song, as a three-column grid.
+
+Nothing was added to the page to carry the affordance — the label that
+already told you which room you were in is the button that leaves it.
+
+## English only
+
+Every wordmark and every title used to be set twice: the record's own
+script big, the Latin transliteration small underneath. The site now sets
+each one once, in Latin.
+
+That took out two typefaces, a whole layer of duplicated labels, and one
+awkward edge case — only 253 of the 369 records had a Devanagari title, so
+a third of them printed once anyway and the layout had to cope with both.
+
+The catalogue **keeps** its `d` field. It is not printed, but search still
+reads it, so typing `चुराके` still finds the song.
+
+## One title, one line
+
+A title never wraps. CSS cannot shrink type to fit a box, so the engines
+measure: set the size CSS asked for, ask how wide the text wants to be on
+one line (`scrollWidth` on a `nowrap` element gives you that even when it
+overflows), and scale down by the ratio.
+
+The floor is 13px, and it is measured rather than guessed. Across every
+title in all three catalogues: nothing is clipped at any desktop width;
+nothing at 390px; and at 320px exactly four titles out of 1,070 reach the
+floor and ellipsise. On a narrow screen the title is also allowed past the
+shell's side padding — at 320px those two gutters are the difference
+between fitting and not.
+
+Two bugs were in the way of this and both are worth remembering:
+
+- `min-width:auto` is the default on a flex item, and for `nowrap` text
+  that is the **min-content width — the whole title**. It silently beat
+  `max-width` and let the box grow to 862px inside a 320px screen, so the
+  measuring code saw a box that already fitted and never shrank anything.
+- A stale `.now__title` rule was still in `dhun.css` from when that class
+  was the small Latin line *under* the Devanagari one. It sat later in the
+  file and quietly won.
+
+## The door is a loading screen
+
+There used to be a button. The button was load-bearing: **a browser will
+not start audio without a user gesture**, so the press that opened the door
+was the press that unlocked the sound.
+
+The screen that replaced it fills and lets itself in after 2.6 seconds. The
+gesture is kept but no longer demanded — a tap or a keypress during the
+load skips ahead *and* counts as the unlock, so the music starts. Waiting
+it out lands you on a **cued** player instead: the track is loaded, nothing
+is playing, and the play key says so. Nothing claims to have started audio
+that did not start.
+
+The bar and the exit run off **one clock**, started together inside a
+single `requestAnimationFrame`. A CSS animation's clock starts at first
+paint and the exit timer's starts when the script runs; on a slow first
+paint those are not the same moment, and the bar had not moved when the
+screen left.
+
+## Three bugs found on the way
+
+- **60px of dead scroll on every page** in phone landscape. `body` carried
+  a `min-height:30rem` — 480px against a 420px viewport — and it bought
+  nothing, because `#shell` is `position:fixed` and the layout never once
+  consulted the height of the body.
+- **Hidden overlays eating clicks.** An id selector outranks the UA's
+  `[hidden]{display:none}`, so a closed panel with `display:grid` sits over
+  the page and swallows everything. It had already caught the track rack;
+  it then caught the room picker and the studio dialog. All three are
+  listed in one rule now.
+- **Focus left on a hidden element.** Closing the track rack with Escape
+  left focus in the search box that was about to be hidden, which meant
+  every keyboard shortcut afterwards read as typing.

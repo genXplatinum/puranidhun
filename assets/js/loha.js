@@ -216,7 +216,8 @@
         you miss, and the whole rack would be doing it 96 times a minute.
         The room is thrown twice as far as the type, which is what makes
         it read as the ROOM moving rather than the page wobbling. */
-    const room = $('#room'), type = $('#type');
+    /* the canvas takes the shake, not its clipping frame — see loha.css */
+    const room = $('#bg'), type = $('#type');
     if (REDUCED) {
       room.style.transform = '';
       type.style.transform = '';
@@ -297,8 +298,45 @@
     markRow();
   }
 
+
+  /*  ── one line, always ─────────────────────────────────────────────
+      A title never wraps. CSS cannot shrink type to fit a box, so this
+      measures: set the size CSS asked for, ask how wide the text wants
+      to be on one line, and scale down by the ratio if it overflows.
+
+      `scrollWidth` on a nowrap element is the full text width even when
+      it is wider than the box, which is the whole trick. The floor stops
+      a pathological title becoming unreadable — past that it ellipsises,
+      which is still one line.
+
+      13px is measured, not guessed. Across every title in the catalogue:
+      nothing is clipped at any desktop width; at 390px it costs 2.4% of
+      the Hindi titles and none of the Punjabi or worldwide ones; only at
+      320px does it bite (14% of the Hindi ones, whose names are long).
+      A higher floor clipped far more, a lower one stopped being
+      readable. */
+  const TITLE_MIN = 13;
+  function fitOneLine(el) {
+    if (!el) return;
+    el.style.fontSize = '';                 /* back to whatever CSS says */
+    /*  Measure the title's OWN box, not its parent's. On a narrow screen
+        the title is deliberately wider than the column it sits in (it
+        bleeds into the shell's padding), so the parent's width is the
+        wrong number and the fit came out too small. clientWidth is the
+        space this element actually has; scrollWidth is what the text
+        wants on one line. */
+    const avail = el.clientWidth;
+    if (!avail) return;
+    const want = el.scrollWidth;
+    if (want <= avail) return;
+    const max = parseFloat(getComputedStyle(el).fontSize) || 16;
+    /* 0.995 keeps a hair of room so sub-pixel rounding cannot re-wrap it */
+    el.style.fontSize = Math.max(TITLE_MIN, Math.floor(max * (avail / want) * 0.995)) + 'px';
+  }
+
   function paint(t) {
     $('#title').textContent = t.t;
+    fitOneLine($('#title'));
     $('#by').textContent    = t.a || '';
     $('#year').textContent  = t.y || '';
     $('#film').textContent  = t.al || '';
@@ -356,9 +394,9 @@
     const n = live().length;
     $('#n-all').textContent = String(n).padStart(2, '0');
     $('#list-n').textContent = n;
-    // the door is removed from the DOM once it has been opened, and this
-    // runs again on every deck change — so it may well be gone by now
-    const gn = $('#gate-n');
+    // the loading screen is removed from the DOM once it lets you in,
+    // and this runs again on every deck change — so it may well be gone
+    const gn = $('#boot-n');
     if (gn) gn.textContent = ALL.length;
   }
 
@@ -497,18 +535,56 @@
       }
     });
 
-    $('#gate-go').addEventListener('click', () => {
-      $('#gate').setAttribute('data-open', '');
-      S.started = true;
-      load(S.i, true);
-      setTimeout(() => { const g = $('#gate'); if (g) g.remove(); }, 700);
-    });
   }
 
   function loadYT() {
     const s = document.createElement('script');
     s.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(s);
+  }
+
+  /* ═══ the loading screen ════════════════════════════════════════ */
+
+  /*  It fills for a fixed time and then lets you in. There used to be a
+      button, and the button was load-bearing: a browser will not start
+      audio without a user gesture, so the press that opened the door was
+      also the press that unlocked the sound.
+
+      So the gesture is kept, but not demanded. A tap or a keypress
+      during the load skips ahead AND counts as the unlock, so the music
+      starts. Waiting it out lands you on a CUED player instead — the
+      track is loaded, nothing is playing, and the play key says so.
+      What this will not do is claim to have started audio it did not. */
+  function bootSplash() {
+    const el = $('#boot');
+    if (!el) { S.started = true; return; }
+    const MS = REDUCED ? 700 : 2600;
+    el.style.setProperty('--boot', MS + 'ms');
+
+    let gone = false;
+    function enter(byGesture) {
+      if (gone) return;
+      gone = true;
+      el.setAttribute('data-go', '');
+      S.started = true;
+      load(S.i, !!byGesture);
+      setTimeout(() => { const b = $('#boot'); if (b) b.remove(); }, 620);
+    }
+    const skip = () => enter(true);
+    ['pointerdown', 'keydown', 'touchstart'].forEach(t =>
+      el.addEventListener(t, skip, { passive: true }));
+    /* a gesture anywhere counts, not only on the screen itself */
+    addEventListener('pointerdown', skip, { once: true, passive: true });
+
+    /*  The bar and the exit start together, inside one frame. Kicking the
+        bar off in CSS and the timer off here would give them two clocks,
+        and on a slow first paint the bar had not moved when the screen
+        left. requestAnimationFrame means a frame has actually been
+        rendered, so the transition is guaranteed to take effect. */
+    requestAnimationFrame(() => {
+      el.setAttribute('data-run', '');
+      setTimeout(() => enter(false), MS);
+    });
   }
 
   /* ═══ boot ══════════════════════════════════════════════════════ */
@@ -533,7 +609,10 @@
     setDeck(S.deck, true);
     if (track()) { paint(track()); armTrack(track()); }
 
+    addEventListener('resize', () => fitOneLine($('#title')));
+
     loadYT();
+    bootSplash();
     requestAnimationFrame(frame);
   }
 

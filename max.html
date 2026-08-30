@@ -12,21 +12,19 @@
 <meta property="og:site_name" content="Purani Dhun">
 <meta property="og:title" content="MAX — the worldwide gym playlist">
 <meta property="og:description" content="No language filter. 202 records that gyms play everywhere, from Master of Puppets to Malhari, in a corridor that moves with the beat.">
-<meta property="og:image" content="https://puranidhun.in/assets/img/og-max.png?v=3">
+<meta property="og:image" content="https://puranidhun.in/assets/img/og-max.png?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="MAX in chalk-white capitals, lit at the end of a dark concrete corridor">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MAX — the worldwide gym playlist">
 <meta name="twitter:description" content="No language filter. 202 records that gyms play everywhere.">
-<meta name="twitter:image" content="https://puranidhun.in/assets/img/og-max.png?v=3">
+<meta name="twitter:image" content="https://puranidhun.in/assets/img/og-max.png?v=4">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Khand only. The gym room carries a Gurmukhi wordmark because those are
-     Punjabi records; this room has no one language to speak for, so it does
-     not pretend to have one. -->
-<link href="https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&family=Tiro+Gurmukhi&display=swap" rel="stylesheet">
+<!-- Khand only, on every page now. -->
+<link href="https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/loha.css">
 </head>
 <body>
@@ -49,7 +47,7 @@
 <div id="shell">
 
   <header id="top">
-    <a class="back" href="gym.html">&larr; <span>ਲੋਹਾ Loha</span></a>
+    <a class="back" href="gym.html">&larr; <span>Loha</span></a>
     <p class="mark">
       <b class="mark__lat mark__lat--solo">MAX</b>
       <span class="mark__lat">Worldwide</span>
@@ -123,6 +121,7 @@
       </label>
       <button id="k-haptic" class="chip" type="button" aria-pressed="false">Haptics</button>
       <a id="src" class="chip" href="#" target="_blank" rel="noopener">Source</a>
+      <button id="k-made" class="chip chip--made" type="button">Made by Lovelace</button>
       <button id="k-list" class="chip chip--n" type="button" aria-expanded="false" aria-controls="list">
         <b id="list-n">0</b> tracks
       </button>
@@ -130,16 +129,20 @@
   </footer>
 </div>
 
-<!-- ══ the door ═════════════════════════════════════════════════════ -->
-<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-h">
-  <div class="gate__in">
-    <p class="gate__kick">Purani Dhun</p>
-    <h2 id="gate-h" class="gate__mark gate__mark--solo"><b>MAX</b></h2>
-    <p class="gate__line">The other room is Punjabi.
-      This one has no language at all.</p>
-    <button id="gate-go" type="button" class="gate__key">Load the bar</button>
-    <p class="gate__fine"><span id="gate-n">0</span> records &middot;
-      four decks &middot; 1970 to now</p>
+<!-- ══ the loading screen ═══════════════════════════════════════════
+     It fills, then it lets you in. There used to be a button here, and
+     the button had a reason: a browser will not start audio without a
+     user gesture. So this keeps the gesture without demanding it — a
+     tap or a keypress during the load skips ahead AND unlocks the
+     audio, and if you just wait, you land on a cued player and press
+     play yourself. Nothing here pretends the sound started when it did
+     not. -->
+<div id="boot" role="status" aria-label="Loading Max">
+  <div class="boot__in">
+    <p class="boot__kick">Made with <span class="boot__love">love</span> by</p>
+    <h2 class="boot__mark">Lovelace<span>Studio</span></h2>
+    <div class="boot__bar" aria-hidden="true"><i></i></div>
+    <p class="boot__fine"><span id="boot-n">0</span> records &middot; four decks &middot; 1970 to now</p>
   </div>
 </div>
 
@@ -157,6 +160,7 @@
 <script src="assets/js/max-catalog.js"></script>
 <script src="assets/js/deck-max.js"></script>
 <script src="assets/js/corridor.js"></script>
+<script src="assets/js/made.js"></script>
 <script src="assets/js/loha.js"></script>
 </body>
 </html>

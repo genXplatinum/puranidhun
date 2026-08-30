@@ -3,29 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Purani Dhun — पुरानी धुन</title>
-<meta name="description" content="369 old Hindi and Punjabi records in nine rooms. Every song draws its own rangoli, lit in the room's own colours.">
+<title>Purani Dhun — nine rooms of old records</title>
+<meta name="description" content="369 old Hindi and Punjabi records in nine rooms, on a cassette transport that runs while the song does — lit in each room's own colours.">
 <meta name="theme-color" content="#08090b">
 <link rel="canonical" href="https://puranidhun.in/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://puranidhun.in/">
 <meta property="og:site_name" content="Purani Dhun">
-<meta property="og:title" content="Purani Dhun — पुरानी धुन">
+<meta property="og:title" content="Purani Dhun — nine rooms of old records">
 <meta property="og:description" content="The barber&#39;s mirror, the bus window, the auto at the red light — and the same song playing in all three. 369 old records, in nine rooms.">
-<meta property="og:image" content="https://puranidhun.in/assets/img/og.png?v=3">
+<meta property="og:image" content="https://puranidhun.in/assets/img/og.png?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Purani Dhun in Devanagari, lit at the end of a dark corridor">
+<meta property="og:image:alt" content="Purani Dhun, lit at the end of a dark corridor">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Purani Dhun — पुरानी धुन">
+<meta name="twitter:title" content="Purani Dhun — nine rooms of old records">
 <meta name="twitter:description" content="The barber&#39;s mirror, the bus window, the auto at the red light — and the same song playing in all three. 369 old records, in nine rooms.">
-<meta name="twitter:image" content="https://puranidhun.in/assets/img/og.png?v=3">
+<meta name="twitter:image" content="https://puranidhun.in/assets/img/og.png?v=4">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Khand is the machine on both pages. Tiro Devanagari Hindi is the
      voice here, because these are Hindi records and Devanagari leads. -->
-<link href="https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Khand:wght@500;600;700&display=swap" rel="stylesheet">
 <!-- loha.css is the system for both pages; dhun.css is this page's half -->
 <link rel="stylesheet" href="assets/css/loha.css">
 <link rel="stylesheet" href="assets/css/dhun.css">
@@ -52,30 +52,28 @@
   <header id="top">
     <a class="back" href="gym.html"><span>Gym Playlist</span> &rarr;</a>
     <p class="mark">
-      <b class="mark__gur">पुरानी धुन</b>
-      <span class="mark__lat">Purani Dhun</span>
+      <b class="mark__lat mark__lat--solo">Purani Dhun</b>
+      <span class="mark__lat">Nine rooms</span>
     </p>
     <p class="stat"><span id="n-now">--</span><i>/</i><span id="n-all">--</span></p>
   </header>
 
-  <!-- nine rooms. A room is a palette and a sentence, nothing else. -->
-  <nav id="rooms" aria-label="Rooms"><div id="rooms-list"></div></nav>
-
   <main id="deck">
-    <!-- the rangoli: rings counter-rotate while the tape runs, and the
-         circle around the outside is how far through the song you are -->
+    <!-- the transport: two reels and the tape between them. The supply
+         reel empties and the take-up reel fills as the song runs, and
+         both turn at v/r — so the thin one spins faster. That is the
+         progress indicator; there is no second one drawn on top. -->
     <div id="record">
-      <svg id="rangoli" viewBox="0 0 1000 1000" role="img" aria-label="Rangoli for the current song">
-        <g id="rg-body"></g>
-        <circle id="rg-track" cx="500" cy="500" r="468"/>
-        <circle id="rg-progress" cx="500" cy="500" r="468"/>
-      </svg>
+      <svg id="reels" role="img" aria-label="Cassette reels for the current song"></svg>
     </div>
 
     <div id="type">
-      <p class="now__room"><span id="now-room"></span><b id="now-room-deva"></b></p>
-      <h1 class="now__deva" id="now-deva">&nbsp;</h1>
-      <p class="now__title" id="now-title">Press play</p>
+      <button class="now__room" id="k-rooms" type="button"
+              aria-haspopup="dialog" aria-expanded="false" aria-controls="picker">
+        <span id="now-room"></span>
+        <svg class="now__caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+      </button>
+      <h1 class="now__title" id="now-title">Press play</h1>
       <p class="tags"><span id="now-artist"></span><span id="now-film"></span><span id="now-year"></span></p>
     </div>
 
@@ -119,6 +117,7 @@
       </label>
       <a id="src" class="chip" href="#" target="_blank" rel="noopener">Source</a>
       <a class="chip chip--go" href="max.html">Worldwide &rarr;</a>
+      <button id="k-made" class="chip chip--made" type="button">Made by Lovelace</button>
       <button id="k-list" class="chip chip--n" type="button" aria-expanded="false" aria-controls="list">
         <b id="list-n">0</b> tapes
       </button>
@@ -126,21 +125,35 @@
   </footer>
 </div>
 
-<!-- ══ the door ═════════════════════════════════════════════════════
-     A browser will not start audio without a gesture, so the door is
-     also the play button. -->
-<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-h">
-  <div class="gate__art" aria-hidden="true"><svg id="gate-rangoli" viewBox="0 0 1000 1000"></svg></div>
-  <div class="gate__in">
-    <p class="gate__kick">Love Lace Designing Studio</p>
-    <h2 id="gate-h" class="gate__mark"><b>पुरानी धुन</b><span>Purani Dhun</span></h2>
-    <p class="gate__line">The barber&rsquo;s mirror, the bus window, the auto
-      at the red light &mdash; and the same song playing in all three.</p>
-    <button id="gate-go" type="button" class="gate__key">Start the record</button>
-    <p class="gate__fine"><span id="gate-n">369</span> records &middot;
-      nine rooms &middot; a rangoli each</p>
+<!-- ══ the loading screen ═══════════════════════════════════════════
+     It fills, then it lets you in. There used to be a button here, and
+     the button had a reason: a browser will not start audio without a
+     user gesture. So this keeps the gesture without demanding it — a
+     tap or a keypress during the load skips ahead AND unlocks the
+     audio, and if you just wait, you land on a cued player and press
+     play yourself. Nothing here pretends the sound started when it did
+     not. -->
+<div id="boot" role="status" aria-label="Loading Purani Dhun">
+  <div class="boot__art" aria-hidden="true"><svg id="boot-reels"></svg></div>
+  <div class="boot__in">
+    <p class="boot__kick">Made with <span class="boot__love">love</span> by</p>
+    <h2 class="boot__mark">Lovelace<span>Studio</span></h2>
+    <div class="boot__bar" aria-hidden="true"><i></i></div>
+    <p class="boot__fine"><span id="boot-n">369</span> records &middot; nine rooms &middot; one long tape</p>
   </div>
 </div>
+
+<!-- ══ the rooms ════════════════════════════════════════════════════
+     Nine plates in a grid rather than a rail across the top. The rail
+     cost a whole row of height on every screen, permanently, to show
+     you the eight rooms you were not in. -->
+<aside id="picker" role="dialog" aria-modal="true" aria-labelledby="picker-h" hidden>
+  <div class="picker__in">
+    <p class="picker__kick" id="picker-h">Nine rooms</p>
+    <div id="rooms-list"></div>
+    <button id="picker-close" class="chip" type="button">Close</button>
+  </div>
+</aside>
 
 <!-- ══ the index ════════════════════════════════════════════════════ -->
 <aside id="list" aria-label="Track list" hidden>
@@ -156,8 +169,9 @@
 
 <script src="assets/js/catalog.js"></script>
 <script src="assets/js/rooms.js"></script>
-<script src="assets/js/rangoli.js"></script>
+<script src="assets/js/reels.js"></script>
 <script src="assets/js/corridor.js"></script>
+<script src="assets/js/made.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

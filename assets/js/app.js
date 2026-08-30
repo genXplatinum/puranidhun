@@ -2,12 +2,12 @@
  *  ------------------------------------------------------------------
  *  Same engine as the gym page: a queue, a YouTube iframe, a tempo
  *  clock, a WebGL corridor and a shake. What is different is what sits
- *  in the middle of it — nine rooms of old Hindi records, and a rangoli
- *  drawn from the video id of whatever is playing.
+ *  in the middle of it — nine rooms of old Hindi records, and a cassette
+ *  transport running while the song does.
  *
  *  The room decides the light. Each of the nine carries a pigment triad,
- *  and that triad is handed to three places at once: the rangoli's
- *  figure, the corridor's hazard paint and lamps, and the page's accent
+ *  and that triad is handed to three places at once: the transport's hub
+ *  and head, the corridor's hazard paint and lamps, and the page's accent
  *  token. Walk into Dard 90s and the whole site goes jamun.
  *
  *  ── on the beat ───────────────────────────────────────────────────
@@ -29,8 +29,7 @@
 
   const CATALOG = window.CATALOG || [];
   const ROOMS   = window.ROOMS   || [];
-  const RG      = window.RANGOLI;
-  const CIRC    = 2 * Math.PI * 468;      // the progress ring
+  const RL      = window.REELS;
 
   const DEFAULT_BPM = 84;
   const FORCE_CAP = REDUCED ? 0.28 : 1;
@@ -153,33 +152,22 @@
     if (themeMeta) themeMeta.setAttribute('content', '#08090b');
     LOOK = { accent: rgb01(a), lamp: rgb01(b), mood: 0.2, party: 0 };
     $('#now-room').textContent = room.name;
-    $('#now-room-deva').textContent = room.deva;
     $$('.room-btn').forEach(x => x.setAttribute('aria-current', String(x.dataset.id === id)));
-    railTo(id);
   }
 
-  /*  Nine rooms will not fit across a phone, so the rail scrolls — and a
-      rail you have to hunt along for the room you are standing in is a
-      broken rail. Measured off rects, not offsetLeft. */
-  function railTo(id) {
-    const rail = $('#rooms-list');
-    const cur  = $(`.room-btn[data-id="${id}"]`);
-    if (!rail || !cur || rail.scrollWidth <= rail.clientWidth) return;
-    const r = rail.getBoundingClientRect(), c = cur.getBoundingClientRect();
-    rail.scrollTo({
-      left: rail.scrollLeft + (c.left + c.width / 2) - (r.left + r.width / 2),
-      behavior: REDUCED ? 'auto' : 'smooth',
-    });
-  }
-
+  /*  The plates. They live in the picker overlay now rather than in a
+      rail across the top, so nothing here has to scroll and nothing has
+      to be walked into view. */
   function buildRoomNav() {
     $('#rooms-list').innerHTML = ROOMS.map(r => `
       <button class="room-btn" type="button" data-id="${r.id}" aria-current="false"
               aria-label="${esc(r.name)}, ${inRoom(r.id).length} tapes">
-        <span class="room-btn__dial">${esc(r.dial)}</span>
-        <span class="room-btn__deva">${esc(r.deva)}</span>
+        <span class="room-btn__dial">${esc(r.name)}</span>
       </button>`).join('');
-    $$('.room-btn').forEach(b => b.addEventListener('click', () => setRoom(b.dataset.id)));
+    $$('.room-btn').forEach(b => b.addEventListener('click', () => {
+      setRoom(b.dataset.id);
+      openPicker(false);
+    }));
   }
 
   function setRoom(id, force) {
@@ -198,24 +186,51 @@
     const n = inRoom(S.room).length;
     $('#n-all').textContent = String(n).padStart(2, '0');
     $('#list-n').textContent = n;
-    const g = $('#gate-n');
+    const g = $('#boot-n');
     if (g) g.textContent = CATALOG.length;
   }
 
-  /* ═══ the rangoli ═══════════════════════════════════════════════ */
+  /* ═══ the rooms ═════════════════════════════════════════════════ */
 
-  function drawRangoli(t) {
-    const fig = RG.build(t.v, roomById(S.room).glow);
-    const rec = $('#record');
-    $('#rg-body').innerHTML = fig.svg;
-    $('#rangoli').setAttribute('aria-label',
-      `Rangoli for ${t.t}: ${fig.fold}-fold, ${fig.rings} rings`);
-    rec.classList.remove('is-drawn');
-    void rec.offsetWidth;                 // retrigger the draw-on
-    rec.classList.add('is-drawn');
+  /*  Opened from the room name above the song. Same shape as the track
+      rack: it is hidden outright when closed rather than merely
+      transparent, so nothing behind it is reachable by tab. */
+  function openPicker(open) {
+    const el = $('#picker');
+    if (open) el.hidden = false;
+    requestAnimationFrame(() => {
+      el.toggleAttribute('data-open', open);
+      if (!open) setTimeout(() => { el.hidden = true; }, 260);
+    });
+    $('#k-rooms').setAttribute('aria-expanded', String(open));
+    if (open) {
+      const cur = $('.room-btn[aria-current="true"]');
+      setTimeout(() => (cur || $('.room-btn')).focus(), 140);
+    } else if (el.contains(document.activeElement)) {
+      $('#k-rooms').focus();
+    }
   }
-  const setProgress = p =>
-    ($('#rg-progress').style.strokeDashoffset = (CIRC * (1 - clamp(p, 0, 1))).toFixed(1));
+
+  /* ═══ the transport ═════════════════════════════════════════════ */
+
+  /*  Built once and then only ever handed numbers — the reels are the
+      same machine all the way through, it is the tape in them that
+      changes. The label is what a screen reader gets instead, and it is
+      the position rather than the picture, because the position is the
+      only part of this that carries information. */
+  let reels = null;
+  function newTape(t) {
+    if (!reels) return;
+    reels.reset(0);
+    const rec = $('#record');
+    rec.classList.remove('is-drawn');
+    void rec.offsetWidth;                 // retrigger the drop-in
+    rec.classList.add('is-drawn');
+    $('#reels').setAttribute('aria-label', `Cassette reels for ${t.t}`);
+  }
+  function setProgress(p, dt, running) {
+    if (reels) reels.frame(clamp(p, 0, 1), dt || 0, !!running);
+  }
 
   /* ═══ the corridor ══════════════════════════════════════════════ */
 
@@ -266,7 +281,8 @@
                  mood: LOOK.mood, party: LOOK.party });
     }
 
-    const room = $('#room'), type = $('#type');
+    /* the canvas takes the shake, not its clipping frame — see loha.css */
+    const room = $('#bg'), type = $('#type');
     if (REDUCED) {
       room.style.transform = ''; type.style.transform = '';
       type.style.setProperty('--split', '0px');
@@ -288,7 +304,7 @@
       $('#fill').style.width = (p * 100).toFixed(2) + '%';
       $('#beatbar').style.left = (p * 100).toFixed(2) + '%';
       $('#seek').value = Math.round(p * 1000);
-      setProgress(p);
+      setProgress(p, dt, S.playing);
     }
     requestAnimationFrame(frame);
   }
@@ -337,25 +353,62 @@
     if (!ytReady) { pending = { i: S.i, play }; paint(t); return; }
     S.duration = t.s || 0;
     S.elapsed = 0;
-    setProgress(0);
     if (play) yt.loadVideoById(t.v); else yt.cueVideoById(t.v);
     paint(t);
     markRow();
   }
 
+
+  /*  ── one line, always ─────────────────────────────────────────────
+      A title never wraps. CSS cannot shrink type to fit a box, so this
+      measures: set the size CSS asked for, ask how wide the text wants
+      to be on one line, and scale down by the ratio if it overflows.
+
+      `scrollWidth` on a nowrap element is the full text width even when
+      it is wider than the box, which is the whole trick. The floor stops
+      a pathological title becoming unreadable — past that it ellipsises,
+      which is still one line.
+
+      13px is measured, not guessed. Across every title in the catalogue:
+      nothing is clipped at any desktop width; at 390px it costs 2.4% of
+      the Hindi titles and none of the Punjabi or worldwide ones; only at
+      320px does it bite (14% of the Hindi ones, whose names are long).
+      A higher floor clipped far more, a lower one stopped being
+      readable. */
+  const TITLE_MIN = 13;
+  function fitOneLine(el) {
+    if (!el) return;
+    el.style.fontSize = '';                 /* back to whatever CSS says */
+    /*  Measure the title's OWN box, not its parent's. On a narrow screen
+        the title is deliberately wider than the column it sits in (it
+        bleeds into the shell's padding), so the parent's width is the
+        wrong number and the fit came out too small. clientWidth is the
+        space this element actually has; scrollWidth is what the text
+        wants on one line. */
+    const avail = el.clientWidth;
+    if (!avail) return;
+    const want = el.scrollWidth;
+    if (want <= avail) return;
+    const max = parseFloat(getComputedStyle(el).fontSize) || 16;
+    /* 0.995 keeps a hair of room so sub-pixel rounding cannot re-wrap it */
+    el.style.fontSize = Math.max(TITLE_MIN, Math.floor(max * (avail / want) * 0.995)) + 'px';
+  }
+
   function paint(t) {
-    /*  The Devanagari is the title and the Latin under it is the
-        transliteration — but 116 of the 369 records carry no Devanagari.
-        Those lead with the Latin in the voice face and drop the second
-        line, rather than showing an empty heading. */
-    $('#now-deva').textContent   = t.d || t.t;
-    $('#now-title').textContent  = t.d ? t.t : '';
+    /*  One title, in Latin. This used to set the Devanagari as the title
+        and the Latin underneath as a transliteration, which meant every
+        song on the page said itself twice — and only 253 of the 369
+        records had the Devanagari to say it with, so a third of them said
+        it once anyway. The catalogue keeps `d` because SEARCH still uses
+        it: typing चुराके finds the song. It is simply not printed. */
+    $('#now-title').textContent  = t.t;
+    fitOneLine($('#now-title'));
     $('#now-artist').textContent = t.a || '';
     $('#now-film').textContent   = t.al || '';
     $('#now-year').textContent   = t.y || '';
     $('#src').href = 'https://www.youtube.com/watch?v=' + t.v;
     $('#n-now').textContent = String(S.i + 1).padStart(2, '0');
-    drawRangoli(t);
+    newTape(t);
     document.title = t.t + ' — Purani Dhun';
   }
 
@@ -440,7 +493,7 @@
     $('#rows').innerHTML = rows.map((t, n) => `
       <li><button class="row" type="button" data-v="${esc(t.v)}" aria-current="false">
         <span class="row__i">${String(n + 1).padStart(2, '0')}</span>
-        <span class="row__t">${esc(t.d || t.t)}</span>
+        <span class="row__t">${esc(t.t)}</span>
         <span class="row__a">${esc(t.a)}${t.al ? ' · ' + esc(t.al) : ''}${t.y ? ' · ' + t.y : ''}</span>
         <span class="row__s">${t.s ? mmss(t.s) : '—'}</span>
       </button></li>`).join('');
@@ -500,7 +553,9 @@
       const p = seek.value / 1000;
       $('#fill').style.width = (p * 100).toFixed(2) + '%';
       $('#t-now').textContent = mmss(p * S.duration);
-      setProgress(p);
+      /*  Scrubbing spins the reels, because scrubbing really does move
+          tape. The engine reads the jump in position, not the clock. */
+      setProgress(p, 0, false);
     });
     const commit = () => {
       if (!S.seeking) return;
@@ -516,6 +571,14 @@
     $('#k-list').addEventListener('click', () =>
       openList($('#k-list').getAttribute('aria-expanded') !== 'true'));
     $('#list-close').addEventListener('click', () => openList(false));
+
+    $('#k-rooms').addEventListener('click', () =>
+      openPicker($('#k-rooms').getAttribute('aria-expanded') !== 'true'));
+    $('#picker-close').addEventListener('click', () => openPicker(false));
+    /* clicking the ground behind the plates closes it, like any dialog */
+    $('#picker').addEventListener('click', e => {
+      if (e.target === $('#picker')) openPicker(false);
+    });
     let qt;
     $('#q').addEventListener('input', e => {
       clearTimeout(qt);
@@ -525,7 +588,7 @@
     addEventListener('keydown', e => {
       const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
       if (e.key === '/' && !typing) { e.preventDefault(); openList(true); return; }
-      if (e.key === 'Escape') { openList(false); return; }
+      if (e.key === 'Escape') { openList(false); openPicker(false); return; }
       if (typing) return;
       switch (e.key) {
         case ' ':          e.preventDefault(); S.started = true; toggle(); break;
@@ -534,24 +597,65 @@
         case 'ArrowUp':    e.preventDefault(); setVolume(S.volume + 5); break;
         case 'ArrowDown':  e.preventDefault(); setVolume(S.volume - 5); break;
         case 's': case 'S': $('#k-shuffle').click(); break;
+        case 'r': case 'R':
+          openPicker($('#k-rooms').getAttribute('aria-expanded') !== 'true');
+          break;
         case 't': case 'T': tap(); break;
         default:
           if (/^[1-9]$/.test(e.key)) { const r = ROOMS[+e.key - 1]; if (r) setRoom(r.id); }
       }
     });
 
-    $('#gate-go').addEventListener('click', () => {
-      $('#gate').setAttribute('data-open', '');
-      S.started = true;
-      load(S.i, true);
-      setTimeout(() => { const g = $('#gate'); if (g) g.remove(); }, 700);
-    });
   }
 
   function loadYT() {
     const s = document.createElement('script');
     s.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(s);
+  }
+
+  /* ═══ the loading screen ════════════════════════════════════════ */
+
+  /*  It fills for a fixed time and then lets you in. There used to be a
+      button, and the button was load-bearing: a browser will not start
+      audio without a user gesture, so the press that opened the door was
+      also the press that unlocked the sound.
+
+      So the gesture is kept, but not demanded. A tap or a keypress
+      during the load skips ahead AND counts as the unlock, so the music
+      starts. Waiting it out lands you on a CUED player instead — the
+      track is loaded, nothing is playing, and the play key says so.
+      What this will not do is claim to have started audio it did not. */
+  function bootSplash() {
+    const el = $('#boot');
+    if (!el) { S.started = true; return; }
+    const MS = REDUCED ? 700 : 2600;
+    el.style.setProperty('--boot', MS + 'ms');
+
+    let gone = false;
+    function enter(byGesture) {
+      if (gone) return;
+      gone = true;
+      el.setAttribute('data-go', '');
+      S.started = true;
+      load(S.i, !!byGesture);
+      setTimeout(() => { const b = $('#boot'); if (b) b.remove(); }, 620);
+    }
+    const skip = () => enter(true);
+    ['pointerdown', 'keydown', 'touchstart'].forEach(t =>
+      el.addEventListener(t, skip, { passive: true }));
+    /* a gesture anywhere counts, not only on the screen itself */
+    addEventListener('pointerdown', skip, { once: true, passive: true });
+
+    /*  The bar and the exit start together, inside one frame. Kicking the
+        bar off in CSS and the timer off here would give them two clocks,
+        and on a slow first paint the bar had not moved when the screen
+        left. requestAnimationFrame means a frame has actually been
+        rendered, so the transition is guaranteed to take effect. */
+    requestAnimationFrame(() => {
+      el.setAttribute('data-run', '');
+      setTimeout(() => enter(false), MS);
+    });
   }
 
   /* ═══ boot ══════════════════════════════════════════════════════ */
@@ -568,20 +672,21 @@
     setVolume(typeof saved.volume === 'number' ? saved.volume : 80);
     setForce(typeof saved.force === 'number' ? saved.force : (REDUCED ? 100 : 55));
 
+    reels = RL && RL.mount($('#reels'));
     setRoom(S.room, true);
-    $('#rg-progress').style.strokeDasharray = CIRC.toFixed(1);
-    setProgress(0);
+    setProgress(0, 0, false);
     if (track()) { paint(track()); armTrack(track()); }
 
-    /*  A rangoli behind the door, so the idea lands before you press
-        anything. Static — the rings are not turning yet. */
-    const gateSvg = $('#gate-rangoli');
-    if (gateSvg) {
-      gateSvg.innerHTML = RG.build('purani-dhun', roomById(S.room).glow).svg
-        .replace(/class="rg-ring[^"]*"/g, 'class="rg-static"');
-    }
+    /*  A transport behind the loading screen, so the idea lands before
+        the page does. Still — no tape is moving yet, and a reel turning
+        with nothing playing would be the first lie on the page. */
+    const bootSvg = $('#boot-reels');
+    if (bootSvg && RL) RL.still(bootSvg, 0.34);
+
+    addEventListener('resize', () => fitOneLine($('#now-title')));
 
     loadYT();
+    bootSplash();
     requestAnimationFrame(frame);
   }
 
